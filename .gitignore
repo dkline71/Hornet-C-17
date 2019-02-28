@@ -2,6 +2,39 @@
 exec
 exe
 parser
+*.m4
+
+# Program-specific autogen files
+Makefile
+autom4te.cache/output.2
+autom4te.cache/traces.2
+build-aux/compile
+config.status
+libtool
+src/Makefile
+src/boost.task-0.4.2/Makefile
+src/common/.deps/
+src/common/Makefile
+src/common/dconfig.h
+src/common/stamp-h1
+src/cpu/.deps/
+src/cpu/Makefile
+src/inject/.deps/
+src/inject/Makefile
+src/net/.deps/
+src/net/Makefile
+src/pe/.deps/
+src/pe/Makefile
+src/power/.deps/
+src/power/Makefile
+src/rts/.deps/
+src/rts/Makefile
+src/sim/.deps/
+src/sim/Makefile
+src/sys/.deps/
+src/sys/Makefile
+src/tools/Makefile
+tests/Makefile
 
 # Prerequisites
 *.d
