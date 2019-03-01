@@ -7,6 +7,6 @@ router::router(node_id i, logger &l) throw() : id(i), ingresses(), log(l), m_mul
 
 router::~router() throw() { }
 
-void router::add_ingress(shared_ptr<ingress> ing) throw(err) {
+void router::add_ingress(boost::shared_ptr<ingress> ing)   {
     ingresses.push_back(ing);
 }

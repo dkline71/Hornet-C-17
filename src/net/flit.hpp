@@ -12,11 +12,11 @@
 #include "flow_id.hpp"
 
 using namespace std;
-using namespace boost;
+
 
 typedef uint64_t packet_id;
 
-typedef tuple<flow_id, packet_id> flow_packet_id;
+typedef boost::tuple<flow_id, packet_id> flow_packet_id;
 
 class flit {
 public:

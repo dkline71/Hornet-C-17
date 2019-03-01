@@ -3,9 +3,9 @@
 
 #include "egress.hpp"
 
-egress::egress(egress_id new_id, shared_ptr<ingress> new_tgt,
-               shared_ptr<pressure_tracker> pt, unsigned bw, logger &l)
-    throw(err)
+egress::egress(egress_id new_id, boost::shared_ptr<ingress> new_tgt,
+               boost::shared_ptr<pressure_tracker> pt, unsigned bw, logger &l)
+     
     : id(new_id), target_id(new_tgt->get_id().get_node_id()), target(new_tgt),
       pressures(pt), bandwidth(bw), log(l) {
     pt->add_egress(target_id);

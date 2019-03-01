@@ -16,47 +16,47 @@
 #include "power_controller.hpp"
 
 using namespace std;
-using namespace boost;
+
 
 class node {
 public:
     explicit node(node_id id, uint32_t flits_per_queue,
-                  shared_ptr<router> new_router,
-                  shared_ptr<channel_alloc> new_vc_alloc,
-                  shared_ptr<tile_statistics> stats,
-                  shared_ptr<vcd_writer> vcd, logger &log,
-                  shared_ptr<random_gen> ran) throw();
+                  boost::shared_ptr<router> new_router,
+                  boost::shared_ptr<channel_alloc> new_vc_alloc,
+                  boost::shared_ptr<tile_statistics> stats,
+                  boost::shared_ptr<vcd_writer> vcd, logger &log,
+                  boost::shared_ptr<random_gen> ran) throw();
     const node_id &get_id() const throw();
-    void add_ingress(node_id src, shared_ptr<ingress> ingress) throw(err);
-    void add_egress(node_id dst, shared_ptr<egress> egress) throw(err);
-    void add_queue_id(virtual_queue_id id) throw(err);
-    shared_ptr<ingress> get_ingress_from(node_id src) throw(err);
-    shared_ptr<egress> get_egress_to(node_id dst) throw(err);
-    shared_ptr<router> get_router() throw();
-    shared_ptr<channel_alloc> get_channel_alloc() throw();
-    shared_ptr<pressure_tracker> get_pressures() throw();
+    void add_ingress(node_id src, boost::shared_ptr<ingress> ingress)  ;
+    void add_egress(node_id dst, boost::shared_ptr<egress> egress)  ;
+    void add_queue_id(virtual_queue_id id)  ;
+    boost::shared_ptr<ingress> get_ingress_from(node_id src)  ;
+    boost::shared_ptr<egress> get_egress_to(node_id dst)  ;
+    boost::shared_ptr<router> get_router() throw();
+    boost::shared_ptr<channel_alloc> get_channel_alloc() throw();
+    boost::shared_ptr<pressure_tracker> get_pressures() throw();
     void connect_from(const string &port_name,
-                      shared_ptr<node> src, const string &src_port_name,
+                      boost::shared_ptr<node> src, const string &src_port_name,
                       const set<virtual_queue_id> &vq_ids, unsigned link_bw,
-                      unsigned bw_to_xbar) throw(err);
-    void tick_positive_edge() throw(err);
-    void tick_negative_edge() throw(err);
+                      unsigned bw_to_xbar)  ;
+    void tick_positive_edge()  ;
+    void tick_negative_edge()  ;
     bool is_drained() const throw();
 private:
     const node_id id;
     unsigned flits_per_queue;
-    typedef map<node_id, shared_ptr<ingress> > ingresses_t;
-    typedef map<node_id, shared_ptr<egress> > egresses_t;
-    shared_ptr<router> rt;
-    shared_ptr<channel_alloc> vc_alloc;
-    shared_ptr<pressure_tracker> pressures;
+    typedef map<node_id, boost::shared_ptr<ingress> > ingresses_t;
+    typedef map<node_id, boost::shared_ptr<egress> > egresses_t;
+    boost::shared_ptr<router> rt;
+    boost::shared_ptr<channel_alloc> vc_alloc;
+    boost::shared_ptr<pressure_tracker> pressures;
     ingresses_t ingresses;
     egresses_t egresses;
     crossbar xbar;
     power_controller pwr_ctl;
     set<virtual_queue_id> queue_ids;
-    shared_ptr<tile_statistics> stats;
-    shared_ptr<vcd_writer> vcd;
+    boost::shared_ptr<tile_statistics> stats;
+    boost::shared_ptr<vcd_writer> vcd;
     logger &log;
 };
 

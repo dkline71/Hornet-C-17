@@ -10,7 +10,6 @@
 #include <boost/tuple/tuple.hpp>
 
 using namespace std;
-using namespace boost;
 
 class logstreambuf : public streambuf {
 public:
@@ -21,7 +20,7 @@ public:
 protected:
     virtual int overflow(int);
 private:
-    vector<tuple<int, streambuf *> > streams;
+    vector<boost::tuple<int, streambuf *> > streams;
     int msg_verb; // current message verbosity
 };
 
@@ -30,17 +29,17 @@ public:
     logger() throw();
     virtual ~logger() throw();
     void add(ostream &, int) throw();
-    void add(shared_ptr<ostream>, int) throw();
+    void add(boost::shared_ptr<ostream>, int) throw();
     void set_message_verbosity(int) throw();
     int get_max_verbosity() const throw();
 private:
     int max_verbosity;
     logstreambuf buf;
-    vector<shared_ptr<ostream> > owned_streams;
+    vector<boost::shared_ptr<ostream> > owned_streams;
 };
 
 inline int logstreambuf::overflow(int ch) {
-    for (vector<tuple<int, streambuf *> >::iterator si = streams.begin();
+    for (vector<boost::tuple<int, streambuf *> >::iterator si = streams.begin();
          si != streams.end(); ++si) {
         if (msg_verb <= si->get<0>()) si->get<1>()->sputc(ch);
     }

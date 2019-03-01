@@ -14,17 +14,17 @@
 #include "logger.hpp"
 
 using namespace std;
-using namespace boost;
+
 
 class sim_thread {
 public:
     sim_thread(uint32_t thread_index,
-               shared_ptr<sys> system,
+               boost::shared_ptr<sys> system,
                const vector<tile_id> &my_tiles,
                const uint64_t num_cycles,
                const uint64_t num_packets,
                const uint64_t sync_period,
-               shared_ptr<barrier> sync_barrier,
+               boost::shared_ptr<boost::barrier> sync_barrier,
                bool &global_drained,
                uint64_t &global_next_time,
                uint64_t &global_max_sync_count,
@@ -34,16 +34,16 @@ public:
                vector<uint64_t> &per_thread_next_time,
                bool enable_fast_forward,
                int cpu_affinity, // -1 if none
-               shared_ptr<vcd_writer> vcd);
+               boost::shared_ptr<vcd_writer> vcd);
     void operator()();
 private:
     uint32_t my_thread_index;
-    shared_ptr<sys> s;
+    boost::shared_ptr<sys> s;
     const vector<tile_id> my_tile_ids;
     const uint64_t max_num_cycles;
     const uint64_t max_num_packets;
     const uint64_t sync_period;
-    shared_ptr<barrier> sync_barrier;
+    boost::shared_ptr<boost::barrier> sync_barrier;
     bool &global_drained; // written only by thread 0
     uint64_t &global_next_time; // written only by thread 0
     uint64_t &global_max_sync_count; // written only by thread 0
@@ -53,26 +53,26 @@ private:
     vector<uint64_t> &per_thread_next_time;
     bool enable_fast_forward;
     int cpu; // CPU this thread should be pinned to; -1 if none
-    shared_ptr<vcd_writer> vcd;
+    boost::shared_ptr<vcd_writer> vcd;
 };
 
 class sim {
 public:
     typedef enum { TM_SEQUENTIAL, TM_ROUND_ROBIN, TM_RANDOM } tile_mapping_t;
 public:
-    sim(shared_ptr<sys> system,
+    sim(boost::shared_ptr<sys> system,
         const uint64_t num_cycles, const uint64_t num_packets,
         const uint64_t sync_period, const uint32_t concurrency,
         bool enable_fast_forward,
         tile_mapping_t tile_mapping,
         const vector<unsigned> &cpu_affinities,
-        shared_ptr<vcd_writer> vcd, logger &log,
-        shared_ptr<random_gen> rng);
+        boost::shared_ptr<vcd_writer> vcd, logger &log,
+        boost::shared_ptr<random_gen> rng);
     virtual ~sim();
 private:
-    vector<shared_ptr<sim_thread> > sim_threads;
-    thread_group threads;
-    shared_ptr<barrier> sync_barrier;
+    vector<boost::shared_ptr<sim_thread> > sim_threads;
+    boost::thread_group threads;
+    boost::shared_ptr<boost::barrier> sync_barrier;
     bool global_drained; // written only by thread 0
     uint64_t global_next_time; // written only by thread 0
     uint64_t global_max_sync_count; // written only by thread 0
@@ -81,7 +81,7 @@ private:
     vector<uint64_t> per_thread_packet_count;
     vector<uint64_t> per_thread_next_time;
     logger &log;
-    shared_ptr<random_gen> rng;
+    boost::shared_ptr<random_gen> rng;
 };
 
 #endif // __SIM_HPP__

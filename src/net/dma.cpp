@@ -9,15 +9,15 @@ ostream &operator<<(ostream &out, const dma_channel_id &id) {
     return out << hex << setfill('0') << setw(2) << id.id;
 }
 
-ostream &operator<<(ostream &out, const tuple<node_id, dma_channel_id> &id) {
+ostream &operator<<(ostream &out, const boost::tuple<node_id, dma_channel_id> &id) {
     return out << id.get<0>() << ":" << id.get<1>();
 }
 
 dma_channel::dma_channel(node_id n_id, dma_channel_id d_id, uint32_t new_bw,
-                         shared_ptr<virtual_queue> q,
-                         shared_ptr<tile_statistics> new_stats,
+                         boost::shared_ptr<virtual_queue> q,
+                         boost::shared_ptr<tile_statistics> new_stats,
                          logger &l) throw()
-    : id(make_tuple(n_id, d_id)), bandwidth(new_bw), vq(q), 
+    : id(boost::make_tuple(n_id, d_id)), bandwidth(new_bw), vq(q), 
       started(false), flow(), remaining_flits(0),
       mem(NULL), stats(new_stats), log(l) { }
 
@@ -25,14 +25,14 @@ dma_channel::~dma_channel() { }
 
 ingress_dma_channel::
 ingress_dma_channel(node_id n_id, dma_channel_id d_id, unsigned new_bw,
-                    shared_ptr<virtual_queue> q,
-                    shared_ptr<tile_statistics> s, logger &l) throw()
+                    boost::shared_ptr<virtual_queue> q,
+                    boost::shared_ptr<tile_statistics> s, logger &l) throw()
     : dma_channel(n_id, d_id, new_bw, q, s, l), pid_p(NULL) { }
 
 ingress_dma_channel::~ingress_dma_channel() { }
 
 void ingress_dma_channel::receive(void *dst, packet_id *pid,
-                                  uint32_t len) throw(err) {
+                                  uint32_t len)   {
     assert(!busy());
     started = false;
     mem = dst;
@@ -46,15 +46,15 @@ bool ingress_dma_channel::has_waiting_flow() const throw() {
             && vq->front_vq_id().is_valid());
 }
 
-uint32_t ingress_dma_channel::get_flow_length() const throw(err) {
+uint32_t ingress_dma_channel::get_flow_length() const   {
     return vq->front_num_remaining_flits_in_packet();
 }
 
-flow_id ingress_dma_channel::get_flow_id() const throw(err) {
+flow_id ingress_dma_channel::get_flow_id() const   {
     return vq->front_new_flow_id();
 }
 
-void ingress_dma_channel::tick_positive_edge() throw(err) {
+void ingress_dma_channel::tick_positive_edge()   {
     if (!vq->front_is_empty() && vq->front_is_head_flit()) {
         if (!vq->front_node_id().is_valid()) {
             assert(!vq->front_vq_id().is_valid());
@@ -103,20 +103,20 @@ void ingress_dma_channel::tick_positive_edge() throw(err) {
     }
 }
 
-void ingress_dma_channel::tick_negative_edge() throw(err) { }
+void ingress_dma_channel::tick_negative_edge()   { }
 
 egress_dma_channel::
 egress_dma_channel(node_id n_id, dma_channel_id d_id, unsigned new_bw,
-                   shared_ptr<virtual_queue> q,
-                   shared_ptr<bridge_channel_alloc> vca,
-                   shared_ptr<tile_statistics> s, logger &l) throw()
+                   boost::shared_ptr<virtual_queue> q,
+                   boost::shared_ptr<bridge_channel_alloc> vca,
+                   boost::shared_ptr<tile_statistics> s, logger &l) throw()
     : dma_channel(n_id, d_id, new_bw, q, s, l), pid(0), vc_alloc(vca) { }
 
 egress_dma_channel::~egress_dma_channel() { }
 
 void egress_dma_channel::send(flow_id f, void *src, uint32_t len,
                               const packet_id &new_pid,
-                              bool c_in_stats) throw(err) {
+                              bool c_in_stats)   {
     assert(!busy());
     started = false;
     flow = f;
@@ -127,7 +127,7 @@ void egress_dma_channel::send(flow_id f, void *src, uint32_t len,
     vc_alloc->claim(vq->get_id());
 }
 
-void egress_dma_channel::tick_positive_edge() throw(err) {
+void egress_dma_channel::tick_positive_edge()   {
     unsigned i;
     for (i = 0; ((bandwidth == 0 || i < bandwidth)
                  && remaining_flits > 0 && !vq->back_is_full()
@@ -162,4 +162,4 @@ void egress_dma_channel::tick_positive_edge() throw(err) {
     }
 }
                 
-void egress_dma_channel::tick_negative_edge() throw(err) { }
+void egress_dma_channel::tick_negative_edge()   { }

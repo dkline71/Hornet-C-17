@@ -1,7 +1,7 @@
 REQUIREMENTS
 
 DON Config
-./configure --with-boost-libdir=/usr/lib/x86_64-linux-gnu --prefix=$PWD
+./configure LDFLAGS=-lpthread --with-boost-libdir=/usr/lib/x86_64-linux-gnu --prefix=$PWD
 
 You will need the following to build the package:
 

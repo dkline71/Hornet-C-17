@@ -11,26 +11,26 @@
 #include <iterator>
 #include "event_parser.hpp"
  
-event_parser::event_parser(shared_ptr<vector<string> > events_files,
-                           shared_ptr<injectors_t> injs,
-                           shared_ptr<flow_starts_t> fss) throw(err)
+event_parser::event_parser(boost::shared_ptr<vector<string> > events_files,
+                           boost::shared_ptr<injectors_t> injs,
+                           boost::shared_ptr<flow_starts_t> fss)  
     : injectors(injs), flow_starts(fss), input(), line(),
         pos("", 0), cur_tick(0) {
     if (!events_files) return;
     for (vector<string>::const_iterator fi = events_files->begin();
          fi != events_files->end(); ++fi) {
-        input = shared_ptr<istream>(new ifstream(fi->c_str()));
+        input = boost::shared_ptr<istream>(new ifstream(fi->c_str()));
         if (input->fail()) throw err_parse(*fi,"cannot open file");
         for (pos = pos_t(*fi, 1); input->good(); pos.get<1>()++) {
             string l;
             getline(*input, l);
-            line = shared_ptr<istream>(new istringstream(l));
+            line = boost::shared_ptr<istream>(new istringstream(l));
             p_line();
         }
     }
 }
 
-uint64_t event_parser::p_nat(uint64_t low) throw(err) {
+uint64_t event_parser::p_nat(uint64_t low)   {
     uint64_t n;
     string s;
     *line >> s;
@@ -67,7 +67,7 @@ uint64_t event_parser::p_nat(uint64_t low) throw(err) {
     return n;
 }
 
-string event_parser::p_kw(const set<string> &kws, bool empty_ok) throw(err) {
+string event_parser::p_kw(const set<string> &kws, bool empty_ok)   {
     assert(kws.size() > 0);
     string w;
     *line >> w;
@@ -95,18 +95,18 @@ string event_parser::p_kw(const set<string> &kws, bool empty_ok) throw(err) {
     return w;
 }
 
-string event_parser::p_kw(const string &kw1, bool empty_ok) throw(err) {
+string event_parser::p_kw(const string &kw1, bool empty_ok)   {
     set<string> kws; kws.insert(kw1);
     return p_kw(kws, empty_ok);
 }
 
 string event_parser::p_kw(const string &kw1, const string &kw2,
-                          bool empty_ok) throw(err) {
+                          bool empty_ok)   {
     set<string> kws; kws.insert(kw1); kws.insert(kw2);
     return p_kw(kws, empty_ok);
 }
 
-void event_parser::p_flow(const flow_id &flow) throw(err) {
+void event_parser::p_flow(const flow_id &flow)   {
     if (flow_starts->find(flow) == flow_starts->end()) {
         ostringstream msg;
         msg << "flow " << flow << " is not configured";
@@ -139,7 +139,7 @@ void event_parser::p_flow(const flow_id &flow) throw(err) {
         ->add_event(cur_tick, flow, packet_size, period);
 }
 
-void event_parser::p_line() throw(err) {
+void event_parser::p_line()   {
     *line >> skipws;
     string w = p_kw("tick", "flow", true);
     if (w.size() == 0) return;

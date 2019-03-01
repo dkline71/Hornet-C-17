@@ -11,9 +11,9 @@
 
 set_channel_alloc::set_channel_alloc(node_id n, bool one_q_per_f,
                                      bool one_f_per_q,
-                                     shared_ptr<tile_statistics> s,
+                                     boost::shared_ptr<tile_statistics> s,
                                      logger &l,
-                                     shared_ptr<random_gen> r) throw()
+                                     boost::shared_ptr<random_gen> r) throw()
     : channel_alloc(n, one_q_per_f, one_f_per_q, l), egresses(), 
       stats(s),ran(r) {
     if (one_q_per_f || one_f_per_q) {
@@ -31,7 +31,7 @@ set_channel_alloc::set_channel_alloc(node_id n, bool one_q_per_f,
 
 set_channel_alloc::~set_channel_alloc() throw() { }
 
-void set_channel_alloc::add_egress(shared_ptr<egress> egr) throw(err) {
+void set_channel_alloc::add_egress(boost::shared_ptr<egress> egr)   {
     assert(egresses.find(egr->get_target_id()) == egresses.end());
     egresses[egr->get_target_id()] = egr;
 }
@@ -39,8 +39,8 @@ void set_channel_alloc::add_egress(shared_ptr<egress> egr) throw(err) {
 void
 set_channel_alloc::add_route(const node_id &src, const flow_id &f,
                              const node_id &dst, const flow_id &nf,
-                             const vector<tuple<virtual_queue_id,double> > &qis)
-    throw(err) {
+                             const vector<boost::tuple<virtual_queue_id,double> > &qis)
+      {
     if (egresses.find(dst) == egresses.end())
         throw err_bad_next_hop(get_id().get_numeric_id(), f.get_numeric_id(),
                                dst.get_numeric_id());
@@ -48,9 +48,9 @@ set_channel_alloc::add_route(const node_id &src, const flow_id &f,
     route_query_t rq = route_query_t(src,f,dst,nf);
     assert(routes.find(rq) == routes.end());
     if (!qis.empty()) { // add only specified queues with given propensities
-        for (vector<tuple<virtual_queue_id,double> >::const_iterator idi =
+        for (vector<boost::tuple<virtual_queue_id,double> >::const_iterator idi =
                  qis.begin(); idi != qis.end(); ++idi) {
-            virtual_queue_id vqid; double prop; tie(vqid,prop) = *idi;
+            virtual_queue_id vqid; double prop; boost::tie(vqid,prop) = *idi;
             assert(prop > 0);
             ingress::queues_t::const_iterator eqi = eqs.find(vqid);
             if (eqi == eqs.end())
@@ -58,30 +58,30 @@ set_channel_alloc::add_route(const node_id &src, const flow_id &f,
                                              f.get_numeric_id(),
                                              dst.get_numeric_id(),
                                              vqid.get_numeric_id());
-            routes[rq].push_back(make_tuple(eqi->second, prop));
+            routes[rq].push_back(boost::make_tuple(eqi->second, prop));
         }
     } else { // add all egress queues with equal propensity
         for (ingress::queues_t::const_iterator eqi = eqs.begin();
              eqi != eqs.end(); ++eqi) {
-            routes[rq].push_back(make_tuple(eqi->second, 1.0));
+            routes[rq].push_back(boost::make_tuple(eqi->second, 1.0));
         }
     }
 }
 
-void set_channel_alloc::allocate() throw(err) {
+void set_channel_alloc::allocate()   {
     int num_free_eqs = 0;
     for (egresses_t::const_iterator ei = egresses.begin();
          ei != egresses.end(); ++ei) {
         const ingress::queues_t &eqs = ei->second->get_remote_queues();
         for (ingress::queues_t::const_iterator eqi = eqs.begin();
              eqi != eqs.end(); ++eqi) {
-            const shared_ptr<virtual_queue> &eq = eqi->second;
+            const boost::shared_ptr<virtual_queue> &eq = eqi->second;
             if (!is_claimed(eq->get_id()) && !eq->back_is_mid_packet()) {
                 ++num_free_eqs;
             }
         }
     }
-    typedef vector<shared_ptr<virtual_queue> > qs_t;
+    typedef vector<boost::shared_ptr<virtual_queue> > qs_t;
     qs_t in_qs;
     qs_t in_qs_port;
     qs_t in_qs_bridge;
@@ -113,7 +113,7 @@ void set_channel_alloc::allocate() throw(err) {
     boost::function<int(int)> rr_fn = bind(&random_gen::random_range, ran, _1);
     random_shuffle(in_qs.begin(), in_qs.end(), rr_fn);
     for (qs_t::iterator qi = in_qs.begin(); qi != in_qs.end(); ++qi) {
-        shared_ptr<virtual_queue> &iq = *qi;
+        boost::shared_ptr<virtual_queue> &iq = *qi;
         assert(!iq->front_is_empty());
         route_query_t rq(iq->get_src_node_id(), iq->front_old_flow_id(),
                          iq->front_node_id(), iq->front_new_flow_id());
@@ -126,16 +126,16 @@ void set_channel_alloc::allocate() throw(err) {
         int active_bridge = 0;
         for (route_queues_t::const_iterator rqi = route_qs.begin();
              rqi != route_qs.end(); ++rqi) {
-            shared_ptr<virtual_queue> rq; double prop; tie(rq,prop) = *rqi;
+            boost::shared_ptr<virtual_queue> rq; double prop; boost::tie(rq,prop) = *rqi;
             if (rq->back_is_empty()) { // OQPF/OFPQ do not apply
                 if (!is_claimed(rq->get_id()) && !rq->back_is_mid_packet()) {
                     prop_sum += prop;
-                    free_qs.push_back(make_tuple(rq, prop_sum));
+                    free_qs.push_back(boost::make_tuple(rq, prop_sum));
                     if(rq->get_ingress_id().get_name() == "X") {
-                      free_qs_bridge.push_back(make_tuple(rq,prop_sum)); 
+                      free_qs_bridge.push_back(boost::make_tuple(rq,prop_sum)); 
                       active_bridge = 1;
                     } else
-                      free_qs_port.push_back(make_tuple(rq,prop_sum));
+                      free_qs_port.push_back(boost::make_tuple(rq,prop_sum));
                 }
             } else if (one_queue_per_flow
                        && rq->back_has_old_flow(iq->front_new_flow_id())) {
@@ -144,12 +144,12 @@ void set_channel_alloc::allocate() throw(err) {
                 free_qs.clear();
                 if (!is_claimed(rq->get_id()) && !rq->back_is_mid_packet()) {
                     prop_sum += prop;
-                    free_qs.push_back(make_tuple(rq, prop_sum));
+                    free_qs.push_back(boost::make_tuple(rq, prop_sum));
                     if(rq->get_ingress_id().get_name() == "X") {
-                      free_qs_bridge.push_back(make_tuple(rq,prop_sum)); 
+                      free_qs_bridge.push_back(boost::make_tuple(rq,prop_sum)); 
                       active_bridge = 1;
                     } else
-                      free_qs_port.push_back(make_tuple(rq,prop_sum));
+                      free_qs_port.push_back(boost::make_tuple(rq,prop_sum));
                 }
                 break;
             } else if (one_flow_per_queue
@@ -158,12 +158,12 @@ void set_channel_alloc::allocate() throw(err) {
                 continue;
             } else if (!is_claimed(rq->get_id()) && !rq->back_is_mid_packet()) {
                 prop_sum += prop;
-                free_qs.push_back(make_tuple(rq, prop_sum));
+                free_qs.push_back(boost::make_tuple(rq, prop_sum));
                 if(rq->get_ingress_id().get_name() == "X") {
-                   free_qs_bridge.push_back(make_tuple(rq,prop_sum)); 
+                   free_qs_bridge.push_back(boost::make_tuple(rq,prop_sum)); 
                    active_bridge = 1;
                 } else
-                   free_qs_port.push_back(make_tuple(rq,prop_sum));
+                   free_qs_port.push_back(boost::make_tuple(rq,prop_sum));
             }
             if (active_bridge == 1) stage1_act_num_bridge += 1;
         }
@@ -174,7 +174,7 @@ void set_channel_alloc::allocate() throw(err) {
             double r = ran->random_range_double(prop_sum);
             for (route_queues_t::const_iterator oqi = free_qs.begin();
                  oqi != free_qs.end(); ++oqi) {
-                shared_ptr<virtual_queue> oq; double prop; tie(oq,prop) = *oqi;
+                boost::shared_ptr<virtual_queue> oq; double prop; boost::tie(oq,prop) = *oqi;
                 if (r < prop) {
                     iq->front_set_vq_id(oq->get_id().get<1>());
                     ++num_grants;

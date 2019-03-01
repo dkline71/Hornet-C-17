@@ -15,24 +15,24 @@ class set_channel_alloc : public channel_alloc {
 public:
     set_channel_alloc(node_id src, bool one_queue_per_flow,
                       bool one_flow_per_queue,
-                      shared_ptr<tile_statistics> stats,
-                      logger &log, shared_ptr<random_gen> ran) throw();
+                      boost::shared_ptr<tile_statistics> stats,
+                      logger &log, boost::shared_ptr<random_gen> ran) throw();
     virtual ~set_channel_alloc() throw();
-    virtual void allocate() throw(err);
-    virtual void add_egress(shared_ptr<egress> egress) throw(err);
+    virtual void allocate()  ;
+    virtual void add_egress(boost::shared_ptr<egress> egress)  ;
     void add_route(const node_id &src, const flow_id &f, const node_id &dst, 
                    const flow_id &nf,
-                   const vector<tuple<virtual_queue_id,double> > &qs)
-        throw(err);
+                   const vector<boost::tuple<virtual_queue_id,double> > &qs)
+         ;
 private:
-    typedef map<node_id, shared_ptr<egress> > egresses_t;
+    typedef map<node_id, boost::shared_ptr<egress> > egresses_t;
     egresses_t egresses;
-    typedef tuple<node_id, flow_id, node_id, flow_id> route_query_t;
-    typedef vector<tuple<shared_ptr<virtual_queue>, double> > route_queues_t;
+    typedef boost::tuple<node_id, flow_id, node_id, flow_id> route_query_t;
+    typedef vector<boost::tuple<boost::shared_ptr<virtual_queue>, double> > route_queues_t;
     typedef map<route_query_t, route_queues_t> routes_t;
     routes_t routes;
-    shared_ptr<tile_statistics> stats;
-    shared_ptr<random_gen> ran;
+    boost::shared_ptr<tile_statistics> stats;
+    boost::shared_ptr<random_gen> ran;
     typedef vector<uint32_t> va_req_t;
 };
 

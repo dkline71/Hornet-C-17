@@ -12,42 +12,42 @@
 #include "injector.hpp"
 
 injector::injector(const pe_id &id, const uint64_t &t,
-                   shared_ptr<id_factory<packet_id> > pif,
-                   shared_ptr<tile_statistics> st, logger &l,
-                   shared_ptr<random_gen> r) throw(err)
+                   boost::shared_ptr<id_factory<packet_id> > pif,
+                   boost::shared_ptr<tile_statistics> st, logger &l,
+                   boost::shared_ptr<random_gen> r)  
     : pe(id), system_time(t), next_event(events.begin()),
       packet_id_factory(pif), stats(st), log(l), ran(r) { }
 
 injector::~injector() throw() { }
 
-void injector::connect(shared_ptr<bridge> net_bridge) throw(err) {
+void injector::connect(boost::shared_ptr<bridge> net_bridge)   {
     net = net_bridge;
-    shared_ptr<vector<uint32_t> > qs = net->get_ingress_queue_ids();
+    boost::shared_ptr<vector<uint32_t> > qs = net->get_ingress_queue_ids();
     queue_ids.clear();
     copy(qs->begin(), qs->end(),
          back_insert_iterator<vector<uint32_t> >(queue_ids));
 }
 
 void injector::add_event(const uint64_t &t, const flow_id &f,
-                         unsigned l, const uint64_t &p) throw(err) {
+                         unsigned l, const uint64_t &p)   {
     assert(events.empty() || t >= events.back().get<0>());
-    events.push_back(make_tuple(t, f, l, p));
+    events.push_back(boost::make_tuple(t, f, l, p));
     next_event = events.begin();
     if (find(flow_ids.begin(), flow_ids.end(), f) == flow_ids.end()) {
         flow_ids.push_back(f);
-        flows[f] = make_tuple(UINT64_MAX, 0, UINT64_MAX);
+        flows[f] = boost::make_tuple(UINT64_MAX, 0, UINT64_MAX);
     }
 }
 
-void injector::set_stop_darsim() throw(err) { }
+void injector::set_stop_darsim()   { }
 
-void injector::tick_positive_edge() throw(err) {
+void injector::tick_positive_edge()   {
     for (; next_event != events.end() && next_event->get<0>() == system_time;
          ++next_event) {
         tick_t t; flow_id f; len_t l; period_t p;
-        tie(t, f, l, p) = *next_event;
+        boost::tie(t, f, l, p) = *next_event;
         if (p > 0) {
-            flows[f] = make_tuple(system_time, l, p);
+            flows[f] = boost::make_tuple(system_time, l, p);
         } else if (l > 0 ) {
             waiting_packet pkt =
                 { packet_id_factory->get_fresh_id(), f, l, stats->is_started() };
@@ -97,7 +97,7 @@ void injector::tick_positive_edge() throw(err) {
     random_shuffle(flow_ids.begin(), flow_ids.end(), rr_fn);
     for (vector<flow_id>::iterator fi = flow_ids.begin();
          fi != flow_ids.end(); ++fi) {
-        tick_t t; len_t l; period_t p; tie(t, l, p) = flows[*fi];
+        tick_t t; len_t l; period_t p; boost::tie(t, l, p) = flows[*fi];
         if (l != 0 && t == system_time) {
             waiting_packet pkt = { packet_id_factory->get_fresh_id(), *fi, l,
                                    stats->is_started() };
@@ -126,19 +126,19 @@ void injector::tick_positive_edge() throw(err) {
     }
 }
 
-void injector::tick_negative_edge() throw(err) { }
+void injector::tick_negative_edge()   { }
 
-void injector::add_packet(uint64_t time, const flow_id &flow, uint32_t len) throw(err) { }
+void injector::add_packet(uint64_t time, const flow_id &flow, uint32_t len)   { }
 
-bool injector::work_queued() throw(err) {
+bool injector::work_queued()   {
     return 0;
 }
 
-bool injector::is_ready_to_offer() throw(err) {
+bool injector::is_ready_to_offer()   {
     return 0;
 }
 
-uint64_t injector::next_pkt_time() throw(err) {
+uint64_t injector::next_pkt_time()   {
     uint64_t next_time = UINT64_MAX;
     if (!incoming_packets.empty()) {
         return system_time;

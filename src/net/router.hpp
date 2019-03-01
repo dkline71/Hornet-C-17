@@ -18,7 +18,7 @@
 #include "channel_alloc.hpp"
 
 using namespace std;
-using namespace boost;
+
 
 class router {
 public:
@@ -30,25 +30,25 @@ public:
     } multi_path_routing_t;
     virtual ~router() throw();
     const node_id &get_id() const throw();
-    virtual void add_ingress(shared_ptr<ingress> ingress) throw(err);
-    virtual void add_egress(shared_ptr<egress> egress) throw(err) = 0;
-    virtual void route() throw(err) = 0;
+    virtual void add_ingress(boost::shared_ptr<ingress> ingress)  ;
+    virtual void add_egress(boost::shared_ptr<egress> egress)   = 0;
+    virtual void route()   = 0;
 
     inline multi_path_routing_t multi_path_routing() { return m_multi_path_routing; }
     inline void set_multi_path_routing(multi_path_routing_t type) { m_multi_path_routing = type; }
 
-    inline void set_virtual_channel_alloc(shared_ptr<channel_alloc> vca) { m_vca = vca; }
+    inline void set_virtual_channel_alloc(boost::shared_ptr<channel_alloc> vca) { m_vca = vca; }
 
 protected:
     router(node_id id, logger &log) throw();
 protected:
     const node_id id;
-    typedef vector<shared_ptr<ingress> > ingresses_t;
+    typedef vector<boost::shared_ptr<ingress> > ingresses_t;
     ingresses_t ingresses;
     logger &log;
 
     multi_path_routing_t m_multi_path_routing;
-    shared_ptr<channel_alloc> m_vca;
+    boost::shared_ptr<channel_alloc> m_vca;
 };
 
 inline const node_id &router::get_id() const throw() { return id; }

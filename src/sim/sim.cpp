@@ -18,12 +18,12 @@ public:
 };
 
 sim_thread::sim_thread(uint32_t new_thread_index,
-                       shared_ptr<sys> new_sys,
+                       boost::shared_ptr<sys> new_sys,
                        const vector<tile_id> &tids,
                        const uint64_t new_num_cycles,
                        const uint64_t new_num_packets,
                        const uint64_t new_sync_period,
-                       shared_ptr<barrier> new_sync_barrier,
+                       boost::shared_ptr<boost::barrier> new_sync_barrier,
                        bool &new_global_drained,
                        uint64_t &new_global_next_time,
                        uint64_t &new_global_max_sync_count,
@@ -33,7 +33,7 @@ sim_thread::sim_thread(uint32_t new_thread_index,
                        vector<uint64_t> &new_per_thread_next_time,
                        bool new_enable_fast_forward,
                        int cpu_affinity,
-                       shared_ptr<vcd_writer> new_vcd)
+                       boost::shared_ptr<vcd_writer> new_vcd)
     : my_thread_index(new_thread_index), s(new_sys),
       my_tile_ids(tids.begin(), tids.end()),
       max_num_cycles(new_num_cycles), max_num_packets(new_num_packets),
@@ -52,7 +52,7 @@ sim_thread::sim_thread(uint32_t new_thread_index,
 void sim_thread::operator()() {
     if (my_tile_ids.empty()) return;
     if (cpu >= 0) {
-        this_thread::bind_to_processor(cpu);
+        boost::this_thread::bind_to_processor(cpu);
     }
     sync_barrier->wait();
     uint64_t sync_count = 0; // count only post-negedge syncs
@@ -140,17 +140,17 @@ void sim_thread::operator()() {
     if (vcd) vcd->commit();
 }
 
-sim::sim(shared_ptr<sys> s,
+sim::sim(boost::shared_ptr<sys> s,
          const uint64_t num_cycles, const uint64_t num_packets,
          const uint64_t sync_period, const uint32_t concurrency,
          bool enable_fast_forward,
          tile_mapping_t tile_mapping,
          const vector<unsigned> &cpu_affinities,
-         shared_ptr<vcd_writer> vcd, logger &new_log,
-         shared_ptr<random_gen> new_rng)
+         boost::shared_ptr<vcd_writer> vcd, logger &new_log,
+         boost::shared_ptr<random_gen> new_rng)
     : global_drained(false), global_next_time(0),
       global_max_sync_count(UINT64_MAX), log(new_log), rng(new_rng) {
-    uint32_t hw_concurrency = thread::hardware_concurrency();
+    uint32_t hw_concurrency = boost::thread::hardware_concurrency();
     if (hw_concurrency == 0) hw_concurrency = 1;
     uint32_t num_threads = concurrency != 0 ? concurrency : hw_concurrency;
     if (num_cycles == 0 && num_packets == 0) {
@@ -212,7 +212,7 @@ sim::sim(shared_ptr<sys> s,
             tiles_per_thread[thr].push_back(*ti);
         }
     }
-    sync_barrier = shared_ptr<barrier>(new barrier(num_threads));
+    sync_barrier = boost::shared_ptr<boost::barrier>(new boost::barrier(num_threads));
     for (uint32_t i = 0; i < num_threads; ++i) {
         per_thread_drained.push_back(false);
         per_thread_time_exceeded.push_back(false);
@@ -220,14 +220,14 @@ sim::sim(shared_ptr<sys> s,
         per_thread_next_time.push_back(0);
     }
     for (uint32_t i = 0; i < num_threads; ++i) {
-        shared_ptr<vcd_writer> thr_vcd =
-            i == num_threads - 1 ? vcd : shared_ptr<vcd_writer>();
+        boost::shared_ptr<vcd_writer> thr_vcd =
+            i == num_threads - 1 ? vcd : boost::shared_ptr<vcd_writer>();
         int cpu_affinity = -1;
         if (cpu_affinities.size() > 0) {
             cpu_affinity = cpu_affinities[i % cpu_affinities.size()];
         }
-        shared_ptr<sim_thread> st = 
-            shared_ptr<sim_thread>(new sim_thread(i, s, tiles_per_thread[i],
+        boost::shared_ptr<sim_thread> st = 
+            boost::shared_ptr<sim_thread>(new sim_thread(i, s, tiles_per_thread[i],
                                                   num_cycles, num_packets,
                                                   sync_period, sync_barrier,
                                                   global_drained,
@@ -241,11 +241,11 @@ sim::sim(shared_ptr<sys> s,
                                                   cpu_affinity,
                                                   thr_vcd));
         sim_threads.push_back(st);
-        try {
+        //try {
             threads.create_thread(*st);
-        } catch (const thread_resource_error &e) {
-            throw err_thread_spawn(string(e.what()));
-        }
+        //} catch (const thread_resource_error &e) {
+        //    throw err_thread_spawn(string(e.what()));
+        //}
     }
 }
 

@@ -18,7 +18,7 @@
 #include "random.hpp"
 
 using namespace std;
-using namespace boost;
+
 
 class g_waiting_packet {
 public:
@@ -41,18 +41,18 @@ public:
 class ginj : public pe {
 public:
     ginj(const pe_id &id, const uint64_t &system_time,
-         shared_ptr<id_factory<packet_id> > packet_id_factory,
-         shared_ptr<tile_statistics> stats, logger &log,
-         shared_ptr<random_gen> ran) throw(err);
+         boost::shared_ptr<id_factory<packet_id> > packet_id_factory,
+         boost::shared_ptr<tile_statistics> stats, logger &log,
+         boost::shared_ptr<random_gen> ran)  ;
     virtual ~ginj() throw();
-    virtual void connect(shared_ptr<bridge> net_bridge) throw(err);
-    virtual void add_packet(uint64_t time, const flow_id &flow, uint32_t len) throw(err);
-    virtual bool work_queued() throw(err);
-    virtual void tick_positive_edge() throw(err);
-    virtual void tick_negative_edge() throw(err);
-    virtual void set_stop_darsim() throw(err);
-    virtual bool is_ready_to_offer() throw(err);
-    virtual uint64_t next_pkt_time() throw(err);
+    virtual void connect(boost::shared_ptr<bridge> net_bridge)  ;
+    virtual void add_packet(uint64_t time, const flow_id &flow, uint32_t len)  ;
+    virtual bool work_queued()  ;
+    virtual void tick_positive_edge()  ;
+    virtual void tick_negative_edge()  ;
+    virtual void set_stop_darsim()  ;
+    virtual bool is_ready_to_offer()  ;
+    virtual uint64_t next_pkt_time()  ;
     virtual bool is_drained() const throw();
     uint32_t pkt_accounting;
     bool stop_darsim;
@@ -60,15 +60,15 @@ private:
     typedef uint64_t tick_t;
     typedef uint32_t len_t;
     typedef uint64_t period_t;
-    typedef vector<tuple<tick_t, flow_id, len_t, period_t> > events_t;
-    typedef map<flow_id, tuple<tick_t, len_t, period_t> > flows_t;
+    typedef vector<boost::tuple<tick_t, flow_id, len_t, period_t> > events_t;
+    typedef map<flow_id,boost::tuple<tick_t, len_t, period_t> > flows_t;
     typedef map<flow_id, queue<g_waiting_packet> > waiting_packets_t;
     typedef map<uint32_t, g_incoming_packet> incoming_packets_t;
 
     typedef queue<g_waiting_packet> waiting_packets_queue_t;
 
     const tick_t &system_time;
-    shared_ptr<bridge> net;
+    boost::shared_ptr<bridge> net;
     events_t events;
     events_t::iterator next_event;
     waiting_packets_t waiting_packets;
@@ -82,10 +82,10 @@ private:
     queue<flow_id> flow_ids_queue;
     
     vector<uint32_t> queue_ids;
-    shared_ptr<id_factory<packet_id> > packet_id_factory;
-    shared_ptr<tile_statistics> stats;
+    boost::shared_ptr<id_factory<packet_id> > packet_id_factory;
+    boost::shared_ptr<tile_statistics> stats;
     logger &log;
-    shared_ptr<random_gen> ran;
+    boost::shared_ptr<random_gen> ran;
 };
 
 #endif // __GINJ_HPP__

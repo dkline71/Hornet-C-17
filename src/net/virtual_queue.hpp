@@ -24,7 +24,7 @@
 #include "ingress_id.hpp"
 
 using namespace std;
-using namespace boost;
+
 
 class channel_alloc;
 
@@ -45,10 +45,10 @@ public:
                            node_id src_node_id,
                            ingress_id parent_ingress_id,
                            uint32_t max_size,
-                           shared_ptr<channel_alloc> vc_alloc,
-                           shared_ptr<pressure_tracker> pressures,
-                           shared_ptr<tile_statistics> stats,
-                           shared_ptr<vcd_writer> vcd,
+                           boost::shared_ptr<channel_alloc> vc_alloc,
+                           boost::shared_ptr<pressure_tracker> pressures,
+                           boost::shared_ptr<tile_statistics> stats,
+                           boost::shared_ptr<vcd_writer> vcd,
                            logger &log) throw();
 
     // methods which do not change over the life of the queue
@@ -128,15 +128,15 @@ private:
     uint32_t back_stale_egress_packet_flits_remaining; // 0 iff packet complete
     bool back_powered;
 
-    shared_ptr<channel_alloc> vc_alloc;
-    shared_ptr<pressure_tracker> pressures;
+    boost::shared_ptr<channel_alloc> vc_alloc;
+    boost::shared_ptr<pressure_tracker> pressures;
 
-    shared_ptr<tile_statistics> stats;
-    shared_ptr<vcd_writer> vcd;
+    boost::shared_ptr<tile_statistics> stats;
+    boost::shared_ptr<vcd_writer> vcd;
     logger &log;
 
-    mutable recursive_mutex front_mutex;
-    mutable recursive_mutex back_mutex;
+    mutable boost::recursive_mutex front_mutex;
+    mutable boost::recursive_mutex back_mutex;
 
 private:
     friend ostream &operator<<(ostream &, const virtual_queue &);

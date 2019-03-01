@@ -14,22 +14,22 @@
 #include "statistics.hpp"
 
 using namespace std;
-using namespace boost;
+
 
 class power_controller {
 public:
-    explicit power_controller(node_id id, shared_ptr<tile_statistics> stats,
-                              shared_ptr<vcd_writer> vcd, logger &log) throw();
+    explicit power_controller(node_id id, boost::shared_ptr<tile_statistics> stats,
+                              boost::shared_ptr<vcd_writer> vcd, logger &log) throw();
     const node_id &get_id() const throw();
-    void add_ingress(node_id src, shared_ptr<ingress> ingress) throw(err);
-    void add_egress(node_id dst, shared_ptr<egress> egress) throw(err);
-    void adjust_power() throw(err);
+    void add_ingress(node_id src, boost::shared_ptr<ingress> ingress)  ;
+    void add_egress(node_id dst, boost::shared_ptr<egress> egress)  ;
+    void adjust_power()  ;
 private:
     const node_id id;
-    typedef map<node_id, shared_ptr<ingress> > ingresses_t;
+    typedef map<node_id, boost::shared_ptr<ingress> > ingresses_t;
     ingresses_t ingresses;
-    shared_ptr<tile_statistics> stats;
-    shared_ptr<vcd_writer> vcd;
+    boost::shared_ptr<tile_statistics> stats;
+    boost::shared_ptr<vcd_writer> vcd;
     logger &log;
 };
 

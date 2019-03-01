@@ -38,12 +38,12 @@ inline void combine_left(map<K, V> &lhs, const map<K, V> &rhs) {
     }
 }
 
-flow_rename_table::flow_rename_table() throw () :
+flow_rename_table::flow_rename_table() :
     table() {
 }
 
 void flow_rename_table::add_flow_rename(const flow_id &from, const flow_id &to)
-        throw (err) {
+{
     assert(from != to);
     if (table.find(to) != table.end()) {
         if (table[to] != from) {
@@ -55,18 +55,18 @@ void flow_rename_table::add_flow_rename(const flow_id &from, const flow_id &to)
     }
 }
 
-flow_id flow_rename_table::operator[](flow_id f) const throw () {
+flow_id flow_rename_table::operator[](flow_id f) const {
     table_t::const_iterator ti;
     while ((ti = table.find(f)) != table.end())
         f = ti->second;
     return f;
 }
 
-running_stats::running_stats() throw () :
+running_stats::running_stats() :
     minimum(-log(0)), maximum(log(0)), mean(0), var_numer(0), weight_sum(0), num_samples(0) {
 }
 
-void running_stats::reset() throw () {
+void running_stats::reset() {
     minimum = -log(0);
     maximum = log(0);
     mean = 0;
@@ -74,7 +74,7 @@ void running_stats::reset() throw () {
     weight_sum = 0;
 }
 
-void running_stats::add(double sample, double weight) throw () {
+void running_stats::add(double sample, double weight) {
     ++num_samples;
     if (!isnan(sample) && !isnan(weight)) { // NaN -> invalid sample
         if (sample < minimum)
@@ -92,23 +92,23 @@ void running_stats::add(double sample, double weight) throw () {
     }
 }
 
-double running_stats::get_min() const throw () {
+double running_stats::get_min() const {
     return minimum;
 }
 
-double running_stats::get_max() const throw () {
+double running_stats::get_max() const {
     return maximum;
 }
 
-double running_stats::get_mean() const throw () {
+double running_stats::get_mean() const {
     return mean;
 }
 
-double running_stats::get_std_dev() const throw () {
+double running_stats::get_std_dev() const {
     return weight_sum == 0 ? 0 : sqrt(var_numer / weight_sum);
 }
 
-void running_stats::combine_with(const running_stats &rhs) throw () {
+void running_stats::combine_with(const running_stats &rhs) {
     minimum = min(minimum, rhs.minimum);
     maximum = max(maximum, rhs.maximum);
     if (weight_sum == 0) {
@@ -123,15 +123,15 @@ void running_stats::combine_with(const running_stats &rhs) throw () {
     }
 }
 
-reorder_buffer::reorder_buffer() throw () :
+reorder_buffer::reorder_buffer() :
     next_packet_ids(), buffered_packet_lengths(), received_count(0),
             out_of_order_count(0) {
 }
 
-void reorder_buffer::receive_packet(const head_flit &flt) throw () {
+void reorder_buffer::receive_packet(const head_flit &flt) {
     flow_id fid = flt.get_flow_id();
     packet_id pid = flt.get_packet_id();
-    flow_packet_id fpid = make_tuple(fid, pid);
+    flow_packet_id fpid = boost::make_tuple(fid, pid);
     if (next_packet_ids.find(fid) == next_packet_ids.end()) {
         // XXX this should be the first ID of any packet sent on this flow
         // XXX and cannot be the first received packet because that onex
@@ -145,7 +145,7 @@ void reorder_buffer::receive_packet(const head_flit &flt) throw () {
         assert(pid == next_packet_ids[fid]);
         ++next_packet_ids[fid];
         ++received_count;
-        while (pid = next_packet_ids[fid], fpid = make_tuple(fid, pid), (buffered_packet_lengths.find(
+        while (pid = next_packet_ids[fid], fpid = boost::make_tuple(fid, pid), (buffered_packet_lengths.find(
                 fpid) != buffered_packet_lengths.end())) {
             buffer_length -= buffered_packet_lengths[fpid];
             buffered_packet_lengths.erase(fpid);
@@ -157,21 +157,21 @@ void reorder_buffer::receive_packet(const head_flit &flt) throw () {
     }
 }
 
-uint32_t reorder_buffer::get_buffer_length() const throw () {
+uint32_t reorder_buffer::get_buffer_length() const {
     return buffer_length;
 }
 
-uint32_t reorder_buffer::get_received_count() const throw () {
+uint32_t reorder_buffer::get_received_count() const {
     return received_count;
 }
 
-uint32_t reorder_buffer::get_out_of_order_count() const throw () {
+uint32_t reorder_buffer::get_out_of_order_count() const {
     return out_of_order_count;
 }
 
 tile_statistics::tile_statistics(const uint64_t &sys_time,
         const uint64_t &new_start_time,
-        shared_ptr<flow_rename_table> new_flow_renames) throw () :
+        boost::shared_ptr<flow_rename_table> new_flow_renames) :
             system_time(sys_time), start_time(new_start_time), flow_renames(
             new_flow_renames), offered_flits(), total_offered_flits(0),
             sent_flits(), total_sent_flits(0), received_flits(),
@@ -180,11 +180,11 @@ tile_statistics::tile_statistics(const uint64_t &sys_time,
             vqwr_flits(), total_vqwr_flits(0), vqwr_bridge(), vqwr_port(),  
             vqrd_flits(), total_vqrd_flits(0), vqrd_bridge(), vqrd_port() {}
 
-bool tile_statistics::is_started() throw() {
+bool tile_statistics::is_started() {
     return system_time >= start_time;
 }
 
-void tile_statistics::reset() throw () {
+void tile_statistics::reset() {
     offered_flits.clear();
     total_offered_flits = 0;
     sent_flits.clear();
@@ -232,9 +232,9 @@ void tile_statistics::reset() throw () {
     vqrd_port.clear();
 }
 
-void tile_statistics::start_sim() throw () {}
+void tile_statistics::start_sim() {}
 
-void tile_statistics::end_sim() throw () {
+void tile_statistics::end_sim() {
     for (flow_stats_t::iterator fsi = flow_reorder_stats.begin(); fsi
             != flow_reorder_stats.end(); ++fsi) {
         const flow_id &fid = fsi->first;
@@ -245,11 +245,11 @@ void tile_statistics::end_sim() throw () {
     }
 }
 
-uint64_t tile_statistics::get_received_packet_count() const throw () {
+uint64_t tile_statistics::get_received_packet_count() const {
     return total_received_packets;
 }
 
-void tile_statistics::send_flit(const flow_id &org_fid, const flit &flt) throw () {
+void tile_statistics::send_flit(const flow_id &org_fid, const flit &flt) {
     flow_id fid = (*flow_renames)[org_fid];
     total_sent_flits++;
     if (sent_flits.find(fid) == sent_flits.end()) {
@@ -259,7 +259,7 @@ void tile_statistics::send_flit(const flow_id &org_fid, const flit &flt) throw (
     }
 }
 
-void tile_statistics::receive_flit(const flow_id &org_fid, const flit &flt) throw () {
+void tile_statistics::receive_flit(const flow_id &org_fid, const flit &flt) {
     flow_id fid = (*flow_renames)[org_fid];
     total_received_flits++;
     if (received_flits.find(fid) == received_flits.end()) {
@@ -279,19 +279,19 @@ void tile_statistics::receive_flit(const flow_id &org_fid, const flit &flt) thro
 }
 
 void tile_statistics::offer_packet(const flow_id &flow, const packet_id &pkt,
-        uint32_t len) throw () {
+        uint32_t len) {
     offered_flits[flow] += len + 1;
     total_offered_flits += len + 1;
     ++total_offered_packets;
 }
 
 void tile_statistics::send_packet(const flow_id &flow, const packet_id &pkt,
-        uint32_t len) throw () {
+        uint32_t len) {
     ++total_sent_packets;
 }
 
-void tile_statistics::receive_packet(const head_flit &flt) throw () {
-    flow_id fid = flt.get_flow_id();
+void tile_statistics::receive_packet(const head_flit &flt) {
+    // XXX flow_id fid = flt.get_flow_id();
     // XXX flow_reorder_stats[fid].add(reorder_buffers[fid].get_buffer_length(),
     // XXX                             system_time - last_received_times[fid]);
     // XXX reorder_buffers[fid].receive_packet(flt);
@@ -299,7 +299,7 @@ void tile_statistics::receive_packet(const head_flit &flt) throw () {
 }
 
 void tile_statistics::switch_links(const egress_id &src, const egress_id &dst,
-        unsigned min_link, unsigned num_links) throw () {
+        unsigned min_link, unsigned num_links)  {
     for (unsigned n = min_link; n < min_link + num_links; ++n) {
         sub_link_id l(src, dst, n);
         assert(link_switches.find(l) != link_switches.end());
@@ -308,22 +308,22 @@ void tile_statistics::switch_links(const egress_id &src, const egress_id &dst,
 }
 
 void tile_statistics::xbar(node_id xbar_id, int sent_flits, int req_flits,
-        double req_frac, double bw_frac) throw () {
+        double req_frac, double bw_frac) {
     xbar_xmit_stats[xbar_id].add(sent_flits, 1);
     xbar_demand_stats[xbar_id].add(req_frac, 1);
     xbar_bw_stats[xbar_id].add(bw_frac, 1);
     }
 
 void tile_statistics::cxn_xmit(node_id src, node_id dst, unsigned used,
-        double req_frac, double bw_frac) throw () {
-    cxn_id cxn = make_tuple(src, dst);
+        double req_frac, double bw_frac) {
+    cxn_id cxn = boost::make_tuple(src, dst);
     cxn_xmit_stats[cxn].add(used, 1);
     cxn_demand_stats[cxn].add(req_frac, 1);
     cxn_bw_stats[cxn].add(bw_frac, 1);
 }
 
 void tile_statistics::vq_wr(const virtual_queue_node_id &vq_id,
-                            const ingress_id &ig_id) throw() {
+                            const ingress_id &ig_id) {
      string ig_name = ig_id.get_name();
      if(ig_name != "X") {
        total_vqwr_flits++;
@@ -348,7 +348,7 @@ void tile_statistics::vq_wr(const virtual_queue_node_id &vq_id,
 } 
  
 void tile_statistics::vq_rd(const virtual_queue_node_id &vq_id,
-                            const ingress_id &ig_id) throw() {
+                            const ingress_id &ig_id) {
        string ig_name = ig_id.get_name();
        if(ig_name != "X") {
        total_vqrd_flits++;
@@ -375,7 +375,7 @@ void tile_statistics::vq_rd(const virtual_queue_node_id &vq_id,
 void tile_statistics::va_alloc(node_id id, int va_act_stage1_port, double va_req_stage1_port,
                                int va_act_stage2_port,   double va_req_stage2_port,
                                int va_act_stage1_bridge, double va_req_stage1_bridge,
-                               int va_act_stage2_bridge, double va_req_stage2_bridge) throw() {
+                               int va_act_stage2_bridge, double va_req_stage2_bridge) {
    if(this->is_started()) {
      va_act_stage1_port_stats[id].add(va_act_stage1_port,1);
      va_req_stage1_port_stats[id].add(va_req_stage1_port,1);
@@ -392,7 +392,7 @@ void tile_statistics::va_alloc(node_id id, int va_act_stage1_port, double va_req
 void tile_statistics::sw_alloc(node_id id, int sw_act_stage1_port, double sw_req_stage1_port,
                                int sw_act_stage2_port, double sw_req_stage2_port,
                                int sw_act_stage1_bridge, double sw_req_stage1_bridge,
-                               int sw_act_stage2_bridge, double sw_req_stage2_bridge) throw() {
+                               int sw_act_stage2_bridge, double sw_req_stage2_bridge) {
    if(this->is_started()) {
      sw_act_stage1_port_stats[id].add(sw_act_stage1_port,1);
      sw_req_stage1_port_stats[id].add(sw_req_stage1_port,1);
@@ -408,8 +408,8 @@ void tile_statistics::sw_alloc(node_id id, int sw_act_stage1_port, double sw_req
 
 void tile_statistics::add_ingress(node_id src, node_id dst, uint64_t num_vqs,
                                   uint64_t bw2xbar,
-                                  uint64_t flits_per_vq) throw() {
-    cxn_id cid = make_tuple(src,dst);
+                                  uint64_t flits_per_vq) {
+    cxn_id cid = boost::make_tuple(src,dst);
 
     if (num_ingresses.find(cid) == num_ingresses.end()) {
         num_ingresses[cid] = 0;
@@ -432,8 +432,8 @@ void tile_statistics::add_ingress(node_id src, node_id dst, uint64_t num_vqs,
     virtual_queue_depths[cid] += flits_per_vq;
 }
 
-void tile_statistics::add_egress(node_id src, node_id dst, uint64_t bandwidth) throw() {
-    cxn_id cid = make_tuple(src,dst);
+void tile_statistics::add_egress(node_id src, node_id dst, uint64_t bandwidth) {
+    cxn_id cid = boost::make_tuple(src,dst);
     if (num_egresses.find(cid) == num_egresses.end()) {
         num_egresses[cid] = 0;
     }
@@ -448,9 +448,9 @@ aux_statistics::aux_statistics(const uint64_t &t) : system_time(t) {}
 
 aux_statistics::~aux_statistics() {}
 
-system_statistics::system_statistics() throw () { }
+system_statistics::system_statistics() { }
 
-uint64_t system_statistics::get_received_packet_count() const throw () {
+uint64_t system_statistics::get_received_packet_count()  const {
     uint64_t received_packets_count = 0;
     for (system_statistics::tile_stats_t::const_iterator tsi =
             tile_stats.begin(); tsi != tile_stats.end(); ++tsi) {
@@ -460,37 +460,37 @@ uint64_t system_statistics::get_received_packet_count() const throw () {
     return received_packets_count;
 }
 
-void system_statistics::add(uint32_t id, shared_ptr<tile_statistics> s) throw () {
+void system_statistics::add(uint32_t id, boost::shared_ptr<tile_statistics> s) {
     assert(tile_stats.find(id) == tile_stats.end());
     tile_stats[id] = s;
 }
 
-void system_statistics::reset() throw () {
+void system_statistics::reset() {
     for (tile_stats_t::iterator tsi = tile_stats.begin(); tsi
             != tile_stats.end(); ++tsi) {
         tsi->second->reset();
     }
 }
 
-void system_statistics::start_sim() throw () {
+void system_statistics::start_sim() {
     for (tile_stats_t::iterator tsi = tile_stats.begin(); tsi
             != tile_stats.end(); ++tsi) {
         tsi->second->start_sim();
     }
 }
 
-void system_statistics::end_sim() throw () {
+void system_statistics::end_sim() {
     for (tile_stats_t::iterator tsi = tile_stats.begin(); tsi
             != tile_stats.end(); ++tsi) {
         tsi->second->end_sim();
     }
 }
 
-static ostream &operator<<(ostream &out, const tuple<egress_id, egress_id,
+static ostream &operator<<(ostream &out, const boost::tuple<egress_id, egress_id,
         unsigned> &l) {
     egress_id src, dst;
     unsigned no;
-    tie(src, dst, no) = l;
+    boost::tie(src, dst, no) = l;
     return out << src << "<->" << dst << "/" << hex << setfill('0') << setw(2)
             << no;
 }
@@ -505,7 +505,7 @@ ostream &operator<<(ostream &out, const system_statistics &s) {
     typedef tile_statistics::link_switch_counter_t link_switch_counter_t;
     typedef tile_statistics::vq_counter_t vq_counter_t;
     typedef tile_statistics::vq_node_counter_t vq_node_counter_t;
-    typedef tile_statistics::node_counter_t node_counter_t;
+    // XXX typedef tile_statistics::node_counter_t node_counter_t;
     typedef tile_statistics::cxn_counter_t cxn_counter_t;
     typedef tile_statistics::cxn_id cxn_id;
 
@@ -559,7 +559,7 @@ ostream &operator<<(ostream &out, const system_statistics &s) {
     // combine per-tile statistics
     for (system_statistics::tile_stats_t::const_iterator tsi =
          s.tile_stats.begin(); tsi != s.tile_stats.end(); ++tsi) {
-        const shared_ptr<tile_statistics> &ts = tsi->second;
+        const boost::shared_ptr<tile_statistics> &ts = tsi->second;
         combine_left(offered_flits, ts->offered_flits);
         combine_left(total_offered_flits, ts->total_offered_flits);
         combine_left(sent_flits, ts->sent_flits);
@@ -711,7 +711,7 @@ ostream &operator<<(ostream &out, const system_statistics &s) {
     for (cxn_stats_t::const_iterator csi = cxn_xmit_stats.begin(); csi
             != cxn_xmit_stats.end(); ++csi) {
         node_id src, dst;
-        tie(src, dst) = csi->first;
+        boost::tie(src, dst) = csi->first;
         const running_stats &xmit = cxn_xmit_stats[csi->first];
         if (xmit.get_mean() == 0)
             continue; // no activity, don't report
@@ -770,9 +770,9 @@ ostream &operator<<(ostream &out, const system_statistics &s) {
                  total_num_virtual_queue =0,total_virtual_queue_depths =0,
                  total_bw2xbar =0,total_bandwidth =0;
                  
-        shared_ptr<tile_statistics> tile_stats = s.get_tile_stats(ni->first.get_numeric_id()); 
+        boost::shared_ptr<tile_statistics> tile_stats = s.get_tile_stats(ni->first.get_numeric_id()); 
         
-        cxn_id cid = make_tuple(ni->first,ni->first);
+        cxn_id cid = boost::make_tuple(ni->first,ni->first);
         system_parameter.bridge_in = tile_stats->num_ingresses[cid];
         system_parameter.bridge_out = tile_stats->num_egresses[cid];
         system_parameter.vq_per_bridge    = tile_stats->num_virtual_queues[cid];
@@ -831,8 +831,8 @@ ostream &operator<<(ostream &out, const system_statistics &s) {
     link_power_d link_power;
     for (cxn_stats_t::const_iterator csi = cxn_xmit_stats.begin();
          csi != cxn_xmit_stats.end(); ++csi) {
-        node_id src, dst; tie(src,dst) = csi->first;
-        cxn_id cid = make_tuple(src,dst);
+        node_id src, dst; boost::tie(src,dst) = csi->first;
+        cxn_id cid = boost::make_tuple(src,dst);
         const running_stats &xmit = cxn_xmit_stats[csi->first];
         if (xmit.get_mean() == 0) continue; // no activity, don't report
         uint64_t bandwidth = s.get_tile_stats(src.get_numeric_id())->

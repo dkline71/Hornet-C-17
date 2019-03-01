@@ -4,15 +4,15 @@
 #include "power_controller.hpp"
 
 power_controller::power_controller(node_id new_id,
-                                   shared_ptr<tile_statistics> new_stats,
-                                   shared_ptr<vcd_writer> new_vcd,
+                                   boost::shared_ptr<tile_statistics> new_stats,
+                                   boost::shared_ptr<vcd_writer> new_vcd,
                                    logger &new_log) throw()
     : id(new_id), stats(new_stats), vcd(new_vcd), log(new_log) { }
 
 const node_id &power_controller::get_id() const throw() { return id; }
 
 void power_controller::add_ingress(node_id src,
-                                   shared_ptr<ingress> ing) throw(err) {
+                                   boost::shared_ptr<ingress> ing)   {
     if (ingresses.find(src) != ingresses.end()) {
         throw err_duplicate_ingress(get_id().get_numeric_id(),
                                     src.get_numeric_id());
@@ -21,8 +21,8 @@ void power_controller::add_ingress(node_id src,
 }
 
 void power_controller::add_egress(node_id dst,
-                                  shared_ptr<egress> egress) throw(err) { }
+                                  boost::shared_ptr<egress> egress)   { }
 
-void power_controller::adjust_power() throw(err) {
+void power_controller::adjust_power()   {
 }
 

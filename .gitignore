@@ -3,6 +3,8 @@ exec
 exe
 parser
 *.m4
+darsim
+bin/*
 
 # Program-specific autogen files
 Makefile

@@ -7,7 +7,7 @@ logstreambuf::logstreambuf() throw() : streams(), msg_verb(0) { }
 logstreambuf::~logstreambuf() throw() { }
 
 void logstreambuf::add(streambuf *s, int v) throw() {
-    streams.push_back(tuple<int,streambuf *>(v,s));
+    streams.push_back(boost::tuple<int,streambuf *>(v,s));
 }
 
 logger::logger() throw()
@@ -20,7 +20,7 @@ void logger::add(ostream &s, int v) throw() {
     buf.add(s.rdbuf(), v);
 }
 
-void logger::add(const shared_ptr<ostream> s, int v) throw() {
+void logger::add(const boost::shared_ptr<ostream> s, int v) throw() {
     if (v > max_verbosity) max_verbosity = v;
     owned_streams.push_back(s);
     buf.add(s->rdbuf(), v);

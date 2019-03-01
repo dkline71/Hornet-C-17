@@ -16,31 +16,31 @@
 #include "statistics.hpp"
 
 using namespace std;
-using namespace boost;
+
 
 class cpu : public pe {
 public:
-    explicit cpu(const pe_id &id, const uint64_t &time, shared_ptr<mem> ram,
+    explicit cpu(const pe_id &id, const uint64_t &time, boost::shared_ptr<mem> ram,
                  uint32_t pc, uint32_t stack_pointer,
-                 shared_ptr<tile_statistics> stats,
-                 logger &log) throw(err);
+                 boost::shared_ptr<tile_statistics> stats,
+                 logger &log)  ;
     virtual ~cpu() throw();
-    virtual void connect(shared_ptr<bridge> net_bridge) throw();
-    virtual void add_packet(uint64_t time, const flow_id &flow, uint32_t len) throw(err);
-    virtual bool work_queued() throw(err);
-    virtual void tick_positive_edge() throw(err);
-    virtual void tick_negative_edge() throw(err);
-    virtual void set_stop_darsim() throw(err);
-    virtual uint64_t next_pkt_time() throw(err);
-    virtual bool is_ready_to_offer() throw(err);
+    virtual void connect(boost::shared_ptr<bridge> net_bridge) throw();
+    virtual void add_packet(uint64_t time, const flow_id &flow, uint32_t len)  ;
+    virtual bool work_queued()  ;
+    virtual void tick_positive_edge()  ;
+    virtual void tick_negative_edge()  ;
+    virtual void set_stop_darsim()  ;
+    virtual uint64_t next_pkt_time()  ;
+    virtual bool is_ready_to_offer()  ;
     virtual bool is_drained() const throw();
 
 private:
     uint32_t get(const gpr &r) const throw();
-    uint32_t get(const hwr &r) const throw(exc_reserved_hw_reg);
+    uint32_t get(const hwr &r) const ;
     void set(const gpr &r, uint32_t val) throw();
     void set_hi_lo(uint64_t val) throw();
-    void execute() throw(err);
+    void execute()  ;
 
 private:
     bool running;
@@ -48,20 +48,20 @@ private:
     uint32_t pc;
     uint32_t gprs[32];
     uint64_t hi_lo;
-    shared_ptr<mem> ram;
-    shared_ptr<bridge> net;
+    boost::shared_ptr<mem> ram;
+    boost::shared_ptr<bridge> net;
     bool jump_active;
     bool interrupts_enabled;
     unsigned jump_time;
     uint32_t jump_target;
     ostringstream stdout_buffer;
-    shared_ptr<tile_statistics> stats;
+    boost::shared_ptr<tile_statistics> stats;
     logger &log;
 private:
-    void syscall(uint32_t syscall_no) throw(err);
+    void syscall(uint32_t syscall_no)  ;
     void flush_stdout() throw();
-    template<class V> V load(const uint32_t &addr) throw(err);
-    template<class V> void store(const uint32_t &addr, const V &val) throw(err);
+    template<class V> V load(const uint32_t &addr)  ;
+    template<class V> void store(const uint32_t &addr, const V &val)  ;
 private:
     cpu(const cpu &); // not permitted
 };
@@ -70,7 +70,7 @@ inline uint32_t cpu::get(const gpr &r) const throw() {
     return r.get_no() == 0 ? 0 : gprs[r.get_no()];
 }
 
-inline uint32_t cpu::get(const hwr &r) const throw(exc_reserved_hw_reg) {
+inline uint32_t cpu::get(const hwr &r) const  {
     switch (r.get_no()) {
     case 0: return get_id().get_numeric_id();
     case 1: return 0;
@@ -98,7 +98,7 @@ inline void cpu::set_hi_lo(uint64_t v) throw() {
 }
 
 template <class V>
-inline V cpu::load(const uint32_t &addr) throw(err) {
+inline V cpu::load(const uint32_t &addr)   {
     V result = ram->load<V>(addr);
     LOG(log,5) << "[cpu " << get_id() << "]     "
         << setfill('0') << setw(2 * sizeof(V)) << result << " <- mem["
@@ -107,7 +107,7 @@ inline V cpu::load(const uint32_t &addr) throw(err) {
 }
 
 template<class V>
-inline void cpu::store(const uint32_t &addr, const V &val) throw(err) {
+inline void cpu::store(const uint32_t &addr, const V &val)   {
     LOG(log,5) << "[cpu " << get_id() << "]     mem["
         << hex << setfill('0') << setw(8) << addr << "] <- "
         << setfill('0') << setw(2 * sizeof(V)) << val << endl;

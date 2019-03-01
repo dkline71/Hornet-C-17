@@ -7,11 +7,11 @@
 #include "arbiter.hpp"
 
 arbiter::arbiter(const uint64_t &time,
-                 shared_ptr<node> src, shared_ptr<node> dst,
+                 boost::shared_ptr<node> src, boost::shared_ptr<node> dst,
                  arbitration_t new_sch, unsigned new_min_bw,
                  unsigned new_period, unsigned new_delay,
-                 shared_ptr<tile_statistics> new_stats,
-                 logger &l) throw(err)
+                 boost::shared_ptr<tile_statistics> new_stats,
+                 logger &l)  
     : id(src->get_id(), dst->get_id()),
       system_time(time), scheme(new_sch), min_bw(new_min_bw),
       period(new_period), delay(new_delay), next_arb(time), arb_queue(),
@@ -41,7 +41,7 @@ arbiter::arbiter(const uint64_t &time,
 
 const link_id &arbiter::get_id() const throw() { return id; }
 
-void arbiter::tick_positive_edge() throw(err) {
+void arbiter::tick_positive_edge()   {
     if (next_arb > system_time) {
         LOG(log,12) << "[arbiter " << hex << setfill('0')
                     << src_to_dst->get_id() << "<->" << dst_to_src->get_id()
@@ -133,7 +133,7 @@ void arbiter::tick_positive_edge() throw(err) {
                 << ", effective ratio: "
                 << (static_cast<double>(new_src_to_dst_bw) /
                     static_cast<double>(new_dst_to_src_bw)) << ")" << endl;
-            arb_queue.push(make_tuple(system_time + delay,
+            arb_queue.push(boost::make_tuple(system_time + delay,
                                       new_src_to_dst_bw, new_dst_to_src_bw));
             last_queued_src_to_dst_bw = new_src_to_dst_bw;
         }
@@ -156,4 +156,4 @@ void arbiter::tick_positive_edge() throw(err) {
     }
 }
 
-void arbiter::tick_negative_edge() throw(err) { }
+void arbiter::tick_negative_edge()   { }

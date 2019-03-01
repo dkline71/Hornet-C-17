@@ -10,25 +10,25 @@
 #include "router.hpp"
 #include "random.hpp"
 
-using namespace boost;
+
 
 class set_router : public router {
 public:
-    set_router(node_id id, logger &log, shared_ptr<random_gen> ran) throw();
+    set_router(node_id id, logger &log, boost::shared_ptr<random_gen> ran) throw();
     virtual ~set_router() throw();
-    virtual void route() throw(err);
-    virtual void add_egress(shared_ptr<egress> egress) throw(err);
+    virtual void route()  ;
+    virtual void add_egress(boost::shared_ptr<egress> egress)  ;
     void add_route(const node_id &prev, const flow_id &flow,
-                   const vector<tuple<node_id,flow_id,double> > &next_hops)
-        throw(err);
+                   const vector<boost::tuple<node_id,flow_id,double> > &next_hops)
+         ;
 private:
-    typedef tuple<node_id, flow_id> route_query_t;
+    typedef boost::tuple<node_id, flow_id> route_query_t;
     // doubles in routes are cumulative propensities
-    typedef vector<tuple<node_id,flow_id,double> > route_nodes_t;
+    typedef vector<boost::tuple<node_id,flow_id,double> > route_nodes_t;
     typedef map<route_query_t, route_nodes_t> routes_t;
     routes_t routes;
-    shared_ptr<random_gen> ran;
-    typedef map<node_id, shared_ptr<egress> > egresses_t;
+    boost::shared_ptr<random_gen> ran;
+    typedef map<node_id, boost::shared_ptr<egress> > egresses_t;
     egresses_t egresses;
 };
 

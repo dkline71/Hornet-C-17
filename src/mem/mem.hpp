@@ -12,7 +12,7 @@
 #include "logger.hpp"
 
 using namespace std;
-using namespace boost;
+
 
 typedef enum {
     MR_LOAD_8, MR_LOAD_16, MR_LOAD_32, MR_STORE_8, MR_STORE_16, MR_STORE_32
@@ -37,16 +37,16 @@ public:
 typedef queue<mem_req> reqs_t;
 typedef queue<mem_resp> resps_t;
 public:
-    explicit mem_ifc(shared_ptr<reqs_t> reqs,
-                     shared_ptr<resps_t> resps) throw();
+    explicit mem_ifc(boost::shared_ptr<reqs_t> reqs,
+                     boost::shared_ptr<resps_t> resps) throw();
 public:
-    shared_ptr<reqs_t> requests;
-    shared_ptr<resps_t> responses;
+    boost::shared_ptr<reqs_t> requests;
+    boost::shared_ptr<resps_t> responses;
 };
 
 class mem {
 public:
-    virtual shared_ptr<mem_ifc> new_interface() throw() = 0;
+    virtual boost::shared_ptr<mem_ifc> new_interface() throw() = 0;
 };
 
 #endif // __MEM_HPP__

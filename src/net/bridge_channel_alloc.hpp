@@ -18,10 +18,10 @@ class bridge_channel_alloc {
 public:
     virtual ~bridge_channel_alloc() throw();
     // returns a vqid q s.t. !q.is_valid() if it's being claimed
-    virtual virtual_queue_id request(flow_id flow) throw(err) = 0;
-    virtual void claim(const virtual_queue_node_id &q) throw(err);
-    virtual void release(const virtual_queue_node_id &q) throw(err);
-    virtual bool is_claimed(const virtual_queue_node_id &q) throw(err);
+    virtual virtual_queue_id request(flow_id flow)   = 0;
+    virtual void claim(const virtual_queue_node_id &q)  ;
+    virtual void release(const virtual_queue_node_id &q)  ;
+    virtual bool is_claimed(const virtual_queue_node_id &q)  ;
     const node_id &get_id() const throw();
 protected:
     bridge_channel_alloc(node_id src, bool one_queue_per_flow,

@@ -6,17 +6,17 @@
 #include "random.hpp"
 #include "set_router.hpp"
 
-set_router::set_router(node_id i, logger &l, shared_ptr<random_gen> r) throw() 
+set_router::set_router(node_id i, logger &l, boost::shared_ptr<random_gen> r) throw() 
     : router(i,l), routes(), ran(r) { }
 
 set_router::~set_router() throw() { }
 
-void set_router::add_egress(shared_ptr<egress> eg) throw(err) { 
+void set_router::add_egress(boost::shared_ptr<egress> eg)   { 
     assert(egresses.find(eg->get_target_id()) == egresses.end());
     egresses[eg->get_target_id()] = eg;
 }
 
-void set_router::route() throw(err) {
+void set_router::route()   {
     map<uint32_t, int> next_hop_cost;
     for (egresses_t::const_iterator ei = egresses.begin(); ei != egresses.end(); ++ei) {
         next_hop_cost[ei->first.get_numeric_id()] = 0;
@@ -24,7 +24,7 @@ void set_router::route() throw(err) {
             /* add -1 for each available queues per egress port */
             const ingress::queues_t &eqs = ei->second->get_remote_queues();
             for (ingress::queues_t::const_iterator eqi = eqs.begin(); eqi != eqs.end(); ++eqi) {
-                const shared_ptr<virtual_queue> &eq = eqi->second;
+                const boost::shared_ptr<virtual_queue> &eq = eqi->second;
                 if (!m_vca->is_claimed(eq->get_id()) &&  
                     !eq->back_is_full() && !eq->back_is_mid_packet()) {
                     --next_hop_cost[ei->first.get_numeric_id()];
@@ -72,22 +72,22 @@ void set_router::route() throw(err) {
                 double prop_sum = 0.0f;
                 route_nodes_t next_hops;
                 for (route_nodes_t::const_iterator ni = nodes.begin(); ni != nodes.end(); ++ni) {
-                    node_id n; flow_id nf; double prop; tie(n,nf,prop) = *ni;
+                    node_id n; flow_id nf; double prop; boost::tie(n,nf,prop) = *ni;
                     if (min_cost > next_hop_cost[n.get_numeric_id()]) {
                         next_hops.clear();
                         min_cost = next_hop_cost[n.get_numeric_id()];
                         prop_sum = prop;
-                        next_hops.push_back(make_tuple(n, nf, prop_sum));
+                        next_hops.push_back(boost::make_tuple(n, nf, prop_sum));
                     } else if (min_cost == next_hop_cost[n.get_numeric_id()]) {
                         prop_sum += prop;
-                        next_hops.push_back(make_tuple(n, nf, prop_sum));
+                        next_hops.push_back(boost::make_tuple(n, nf, prop_sum));
                     }
                 }
                 assert(!next_hops.empty());
                 double r = ran->random_range_double(next_hops.back().get<2>());
                 for (route_nodes_t::const_iterator ni = next_hops.begin();
                      ni != next_hops.end(); ++ni) {
-                    node_id n; flow_id nf; double prop; tie(n,nf,prop) = *ni;
+                    node_id n; flow_id nf; double prop; boost::tie(n,nf,prop) = *ni;
                     if (r < prop) {
                         dst_n = n;
                         dst_f = nf;
@@ -101,7 +101,7 @@ void set_router::route() throw(err) {
 }
 
 void set_router::add_route(const node_id &src, const flow_id &f,
-                           const route_nodes_t &dsts) throw(err) {
+                           const route_nodes_t &dsts)   {
     assert(!dsts.empty());
     route_query_t rq = route_query_t(src, f);
     if (routes.find(rq) != routes.end()) {
@@ -111,13 +111,13 @@ void set_router::add_route(const node_id &src, const flow_id &f,
     double prop_sum = 0.0;
     for (route_nodes_t::const_iterator di = dsts.begin();
          di != dsts.end(); ++di) {
-        node_id n; flow_id nf; double prop; tie(n,nf,prop) = *di;
+        node_id n; flow_id nf; double prop; boost::tie(n,nf,prop) = *di;
         assert(prop > 0);
         prop_sum += prop;
-        routes[rq].push_back(make_tuple(n, nf, prop_sum));
+        routes[rq].push_back(boost::make_tuple(n, nf, prop_sum));
     }
     if (dsts.size() == 1) {
-        node_id n; flow_id nf; double prop; tie(n,nf,prop) = dsts.front();
+        node_id n; flow_id nf; double prop; boost::tie(n,nf,prop) = dsts.front();
         LOG(log,4) << "router " << get_id() << " routing flow " << f
                    << " from node " << src << " to node " << n;
         if (nf != f) LOG(log,4) << " as " << nf;
@@ -127,7 +127,7 @@ void set_router::add_route(const node_id &src, const flow_id &f,
                    << " from node " << src << " to nodes ";
         for (route_nodes_t::const_iterator di = dsts.begin();
              di != dsts.end(); ++di) {
-            node_id n; flow_id nf; double prop; tie(n,nf,prop) = *di;
+            node_id n; flow_id nf; double prop; boost::tie(n,nf,prop) = *di;
             LOG(log,4) << (di == dsts.begin() ? "" : ", ")
                        << n;
             if (nf != f) LOG(log,4) << " as " << nf;

@@ -35,10 +35,10 @@ void bind_to_processor( unsigned int n)
 
 	int errno_( ::pthread_setaffinity_np( ::pthread_self(), sizeof( cpuset), & cpuset) );
 	if ( errno_ != 0)
-		throw boost::system::system_error(
-				boost::system::error_code(
-					errno_,
-					boost::system::system_category) );
+	{
+		std::cerr<<"BIND TO PROCESSOR FAILED. ABORTING!"<<std::endl;
+		abort();
+	}
 }
 
 inline
@@ -53,10 +53,10 @@ void bind_to_any_processor()
 
 	int errno_( ::pthread_setaffinity_np( ::pthread_self(), sizeof( cpuset), & cpuset) );
 	if ( errno_ != 0)
-		throw boost::system::system_error(
-				boost::system::error_code(
-					errno_,
-					boost::system::system_category) );
+	{
+		std::cerr<<"BIND To ANY PROCESSOR FAILED. ABORTING!"<<std::endl;
+		abort();
+	}
 }
 
 }}

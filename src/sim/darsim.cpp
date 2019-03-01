@@ -23,7 +23,7 @@
 #include "sim.hpp"
 
 using namespace std;
-using namespace boost;
+
 using namespace boost::posix_time;
 namespace po = boost::program_options;
 
@@ -33,9 +33,9 @@ static const uint32_t version = 201003171;
 typedef void (*custom_signal_handler_t)(int);
 
 static logger syslog;
-static shared_ptr<sys> s;
-static shared_ptr<system_statistics> stats;
-static shared_ptr<vcd_writer> vcd;
+static boost::shared_ptr<sys> s;
+static boost::shared_ptr<system_statistics> stats;
+static boost::shared_ptr<vcd_writer> vcd;
 static bool report_stats = true;
 
 custom_signal_handler_t prev_sig_int_handler;
@@ -60,13 +60,14 @@ static uint32_t fresh_random_seed() {
     return random_seed;
 }
 
-shared_ptr<sys> new_system(const uint64_t &sys_time, string file,
+
+boost::shared_ptr<sys> new_system(const uint64_t &sys_time, string file,
                            const uint64_t &stats_start,
-                           shared_ptr<vector<string> > evt_files,
-                           shared_ptr<vector<string> > memtrace_files,
+                           boost::shared_ptr<vector<string> > evt_files,
+                           boost::shared_ptr<vector<string> > memtrace_files,
                            uint32_t random_seed,
-                           uint32_t test_flags) throw(err) {
-    shared_ptr<ifstream> img(new ifstream(file.c_str(), ios::in | ios::binary));
+                           uint32_t test_flags)   {
+    boost::shared_ptr<ifstream> img(new ifstream(file.c_str(), ios::in | ios::binary));
     if (img->fail()) throw err_parse(file, "cannot read file");
     char file_magic[5] = { 0, 0, 0, 0, 0 };
     img->read(file_magic, 4);
@@ -80,7 +81,7 @@ shared_ptr<sys> new_system(const uint64_t &sys_time, string file,
             << "does not match simulator (" << version << ")";
         throw err_parse(file, msg.str());
     }
-    shared_ptr<sys> s(new sys(sys_time, img, stats_start,
+    boost::shared_ptr<sys> s(new sys(sys_time, img, stats_start,
                               evt_files, memtrace_files, vcd, syslog, random_seed, false,
                               test_flags));
     img->close();
@@ -141,14 +142,14 @@ int main(int argc, char **argv) {
     args_desc.add("mem-image", 1);
     po::variables_map opts;
     all_opts_desc.add(opts_desc).add(hidden_opts_desc);
-    try {
+    //try {
         po::store(po::command_line_parser(argc, argv).options(all_opts_desc).
                   positional(args_desc).run(), opts);
         po::notify(opts);
-    } catch (po::error &e) {
-        cerr << e.what() << endl;
-        exit(1);
-    }
+    //} catch (po::error &e) {
+    //    cerr << e.what() << endl;
+    //    exit(1);
+    //}
     if (opts.count("help")) {
         cout << "Usage: darsim SYSTEM_IMAGE" << endl;
         cout << opts_desc;
@@ -173,7 +174,7 @@ int main(int argc, char **argv) {
         vector<string> fns = opts["log-file"].as<vector<string> >();
         for (vector<string>::const_iterator fn = fns.begin();
              fn != fns.end(); ++fn) {
-            shared_ptr<ofstream> f(new ofstream(fn->c_str()));
+            boost::shared_ptr<ofstream> f(new ofstream(fn->c_str()));
             if (f->fail()) {
                 cerr << "ERROR: failed to write log: " << *fn << endl;
                 exit(1);
@@ -247,16 +248,16 @@ int main(int argc, char **argv) {
         srandom(fresh_random_seed());
         random_seed = fresh_random_seed();
     }
-    shared_ptr<vector<string> > events_files;
+    boost::shared_ptr<vector<string> > events_files;
     if (opts.count("events")) {
-        events_files = shared_ptr<vector<string> >(new vector<string>());
+        events_files = boost::shared_ptr<vector<string> >(new vector<string>());
         vector<string> fns = opts["events"].as<vector<string> >();
         copy(fns.begin(), fns.end(),
              back_insert_iterator<vector<string> >(*events_files));
     }
-    shared_ptr<vector<string> > memtraces_files;
+    boost::shared_ptr<vector<string> > memtraces_files;
     if (opts.count("memory-traces")) {
-        memtraces_files = shared_ptr<vector<string> >(new vector<string>());
+        memtraces_files = boost::shared_ptr<vector<string> >(new vector<string>());
         vector<string> fns = opts["memory-traces"].as<vector<string> >();
         copy(fns.begin(), fns.end(),
              back_insert_iterator<vector<string> >(*memtraces_files));
@@ -269,11 +270,11 @@ int main(int argc, char **argv) {
         fast_forward = false;
     }
     LOG(syslog,0) << dar_full_version << endl << endl;
-    vcd = shared_ptr<vcd_writer>();
+    vcd = boost::shared_ptr<vcd_writer>();
     if (opts.count("vcd-file") == 1) {
         uint64_t vcd_start = 0, vcd_end = 0;
         string fn = opts["vcd-file"].as<string>();
-        shared_ptr<ofstream> f(new ofstream(fn.c_str()));
+        boost::shared_ptr<ofstream> f(new ofstream(fn.c_str()));
         if (f->fail()) {
             cerr << "failed to write VCD: " << fn << endl;
             exit(1);
@@ -301,7 +302,7 @@ int main(int argc, char **argv) {
                 exit(1);
             }
         }
-        vcd = shared_ptr<vcd_writer>(new vcd_writer(0, f,
+        vcd = boost::shared_ptr<vcd_writer>(new vcd_writer(0, f,
                                                     vcd_start, vcd_end));
     } else if (opts.count("vcd-file") > 1) {
         cerr << "ERROR: option --vcd-file admits only one argument" << endl;
@@ -317,19 +318,19 @@ int main(int argc, char **argv) {
     vector<unsigned> cpu_affinities;
     if (opts.count("cpu-affinity")) {
         vector<string> ws;
-        split(ws, opts["cpu-affinity"].as<string>(), is_any_of(" \t\n"),
-              token_compress_on);
-        unsigned hw_concurrency = thread::hardware_concurrency();
+        boost::split(ws, opts["cpu-affinity"].as<string>(), boost::is_any_of(" \t\n"),
+              boost::token_compress_on);
+        unsigned hw_concurrency = boost::thread::hardware_concurrency();
         for (vector<string>::iterator w = ws.begin(); w != ws.end(); ++w) {
             if (w->size() == 0) continue;
             unsigned cpu_id;
-            try {
-                cpu_id = lexical_cast<unsigned>(*w);
-            } catch (const bad_lexical_cast &) {
-                cerr << "ERROR: argument to --cpu-affinity not "
-                     << "a valid CPU ID " << *w << endl;
-                exit(1);
-            }
+            //try {
+                cpu_id = boost::lexical_cast<unsigned>(*w);
+            //} catch (const bad_lexical_cast &) {
+            //    cerr << "ERROR: argument to --cpu-affinity not "
+            //         << "a valid CPU ID " << *w << endl;
+            //    exit(1);
+            //}
             if (hw_concurrency > 0 && cpu_id >= hw_concurrency) {
                 cerr << "ERROR: invalid CPU ID " << cpu_id
                      << " in --cpu-affinity (valid ID"
@@ -343,26 +344,26 @@ int main(int argc, char **argv) {
             cpu_affinities.push_back(cpu_id);
         }
     }
-    try {
+    //try {
         s = new_system(0, mem_image, stats_start, events_files, memtraces_files,
                        random_seed, test_flags);
         stats = s->get_statistics();
-    } catch (const err_parse &e) {
-        cerr << e << endl;
-        exit(1);
-    } catch (const err &e) {
-        cerr << "ERROR: " << e << endl;
-        exit(1);
-    }
+    //} catch (const err_parse &e) {
+    //    cerr << e << endl;
+    //    exit(1);
+    //} catch (const err &e) {
+    //    cerr << "ERROR: " << e << endl;
+    //    exit(1);
+    //}
     prev_sig_int_handler = signal(SIGINT, sig_int_handler);
     if (prev_sig_int_handler == SIG_IGN) signal(SIGINT, prev_sig_int_handler);
     stats->start_sim();
-    try {
+    //try {
         ptime sim_start_time = microsec_clock::local_time();
         uint32_t last_stats_start = stats_start;
         {
             // the_sim does not leave the scope until simulation ends
-            shared_ptr<random_gen> rng(new random_gen(-2, random_seed));
+            boost::shared_ptr<random_gen> rng(new random_gen(-2, random_seed));
             sim the_sim(s, num_cycles, num_packets, sync_period, concurrency,
                         fast_forward, tile_mapping, cpu_affinities,
                         vcd, syslog, rng);
@@ -389,18 +390,18 @@ int main(int argc, char **argv) {
                 << dec << stats_start
                 << ")" << endl;
         }
-    } catch (const exc_syscall_exit &e) {
-        if (vcd) vcd->commit();
-        stats->end_sim();
-        if (vcd) vcd->finalize();
-        LOG(syslog,0) << endl << "simulation ended on CPU exit()" << endl;
-        if (stats && report_stats) {
-            LOG(syslog,0) << endl << *stats << endl;
-        }
-        exit(e.exit_code);
-    } catch (const err &e) {
-        cerr << "ERROR: " << e << endl;
-        exit(2);
-    }
+    //} catch (const exc_syscall_exit &e) {
+    //    if (vcd) vcd->commit();
+    //    stats->end_sim();
+    //    if (vcd) vcd->finalize();
+    //    LOG(syslog,0) << endl << "simulation ended on CPU exit()" << endl;
+    //    if (stats && report_stats) {
+    //        LOG(syslog,0) << endl << *stats << endl;
+    //    }
+    //    exit(e.exit_code);
+    //} catch (const err &e) {
+    //    cerr << "ERROR: " << e << endl;
+    //    exit(2);
+    //}
     signal(SIGINT, prev_sig_int_handler);
 }

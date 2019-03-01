@@ -7,7 +7,7 @@
 #include "main_mem.hpp"
 
 main_mem::main_mem(uint32_t new_id, uint32_t new_start, uint32_t new_size,
-                   logger &new_log) throw(err)
+                   logger &new_log)  
     : id(new_id), start(new_start), size(new_size),
       contents(new uint8_t[new_size]), interfaces(), log(new_log) {
     if (contents == NULL) throw err_out_of_mem();
@@ -23,20 +23,20 @@ main_mem::~main_mem() throw() {
 };
 
 shared_ptr<mem_ifc> main_mem::new_interface() throw() {
-    shared_ptr<mem_ifc::reqs_t> reqs =
-        shared_ptr<mem_ifc::reqs_t>(new mem_ifc::reqs_t());
-    shared_ptr<mem_ifc::resps_t> resps =
-        shared_ptr<mem_ifc::resps_t>(new mem_ifc::resps_t());
-    shared_ptr<mem_ifc> ifc = shared_ptr<mem_ifc>(new mem_ifc(reqs, resps));
+    boost::shared_ptr<mem_ifc::reqs_t> reqs =
+        boost::shared_ptr<mem_ifc::reqs_t>(new mem_ifc::reqs_t());
+    boost::shared_ptr<mem_ifc::resps_t> resps =
+        boost::shared_ptr<mem_ifc::resps_t>(new mem_ifc::resps_t());
+    boost::shared_ptr<mem_ifc> ifc = boost::shared_ptr<mem_ifc>(new mem_ifc(reqs, resps));
     interfaces.push_back(ifc);
     return ifc;
 }
 
-void main_mem::tick_positive_edge() throw(err) {
+void main_mem::tick_positive_edge()   {
     assert(contents);
     for (interfaces_t::iterator ii = interfaces.begin();
          ii != interfaces.end(); ++ii) {
-        shared_ptr<mem_ifc> ifc = *ii;
+        boost::shared_ptr<mem_ifc> ifc = *ii;
         while (!ifc->requests->empty()) {
             mem_req &req = ifc->requests->front();
             mem_resp resp;
@@ -89,5 +89,5 @@ void main_mem::tick_positive_edge() throw(err) {
     }
 }
 
-void main_mem::tick_negative_edge() throw(err) { }
+void main_mem::tick_negative_edge()   { }
 

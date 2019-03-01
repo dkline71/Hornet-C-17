@@ -8,7 +8,7 @@
 #include "cstdint.hpp"
 #include <boost/random.hpp>
 
-using namespace boost;
+
 
 class random_gen { 
 private:

@@ -14,23 +14,23 @@
 #include "ingress_id.hpp"
 
 using namespace std;
-using namespace boost;
+
 
 class ingress {
 public:
-    typedef map<virtual_queue_id, shared_ptr<virtual_queue> > queues_t;
+    typedef map<virtual_queue_id, boost::shared_ptr<virtual_queue> > queues_t;
 public:
     explicit ingress(const ingress_id &id, const node_id &src_node_id,
                      const set<virtual_queue_id> &vq_ids,
                      unsigned flits_per_queue, unsigned bw_to_xbar,
-                     shared_ptr<channel_alloc> virtual_channel_alloc,
-                     shared_ptr<pressure_tracker> pressures,
-                     shared_ptr<tile_statistics> stats,
-                     shared_ptr<vcd_writer> vcd,
-                     logger &log) throw(err);
-    void add_queue(shared_ptr<virtual_queue> q) throw(err);
-    void tick_positive_edge() throw(err);
-    void tick_negative_edge() throw(err);
+                     boost::shared_ptr<channel_alloc> virtual_channel_alloc,
+                     boost::shared_ptr<pressure_tracker> pressures,
+                     boost::shared_ptr<tile_statistics> stats,
+                     boost::shared_ptr<vcd_writer> vcd,
+                     logger &log)  ;
+    void add_queue(boost::shared_ptr<virtual_queue> q)  ;
+    void tick_positive_edge()  ;
+    void tick_negative_edge()  ;
     bool is_drained() const throw();
     const queues_t &get_queues() const throw();
     const ingress_id &get_id() const throw();
@@ -44,7 +44,7 @@ private:
     const node_id src_node_id;
     queues_t vqs;
     next_hops_t next_hops;
-    shared_ptr<tile_statistics> stats;
+    boost::shared_ptr<tile_statistics> stats;
     logger &log;
 private:
     ingress(); // not implemented

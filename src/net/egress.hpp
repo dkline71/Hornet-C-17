@@ -10,13 +10,13 @@
 #include "egress_id.hpp"
 
 using namespace std;
-using namespace boost;
+
 
 class egress {
 public:
-    explicit egress(egress_id id, shared_ptr<ingress> target,
-                    shared_ptr<pressure_tracker> pressures,
-                    unsigned max_bandwidth, logger &log) throw(err);
+    explicit egress(egress_id id, boost::shared_ptr<ingress> target,
+                    boost::shared_ptr<pressure_tracker> pressures,
+                    unsigned max_bandwidth, logger &log)  ;
     const egress_id &get_id() const throw();
     const node_id &get_target_id() const throw();
     unsigned get_bandwidth() const throw();
@@ -26,8 +26,8 @@ public:
 private:
     const egress_id id;
     const node_id target_id;
-    shared_ptr<ingress> target;
-    shared_ptr<pressure_tracker> pressures;
+    boost::shared_ptr<ingress> target;
+    boost::shared_ptr<pressure_tracker> pressures;
     unsigned bandwidth;
     logger &log;
 };

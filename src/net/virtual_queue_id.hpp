@@ -11,7 +11,7 @@
 #include "node_id.hpp"
 
 using namespace std;
-using namespace boost;
+
 
 class virtual_queue_id {
 public:
@@ -27,7 +27,7 @@ private:
     uint32_t id;
 };
 
-typedef tuple<node_id, virtual_queue_id> virtual_queue_node_id;
+typedef boost::tuple<node_id, virtual_queue_id> virtual_queue_node_id;
 
 inline virtual_queue_id::virtual_queue_id() throw()
     : id(0xffffffffUL) { }

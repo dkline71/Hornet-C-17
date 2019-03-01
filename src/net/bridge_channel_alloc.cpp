@@ -11,16 +11,16 @@ bridge_channel_alloc::bridge_channel_alloc(node_id new_id, bool one_q_per_f,
 bridge_channel_alloc::~bridge_channel_alloc() throw() { }
 
 bool bridge_channel_alloc::is_claimed(const virtual_queue_node_id &q)
-    throw(err) {
+      {
     return in_use.find(q) != in_use.end();
 }
 
-void bridge_channel_alloc::claim(const virtual_queue_node_id &q) throw(err) {
+void bridge_channel_alloc::claim(const virtual_queue_node_id &q)   {
     assert(!is_claimed(q));
     in_use.insert(q);
 }
 
-void bridge_channel_alloc::release(const virtual_queue_node_id &q) throw(err) {
+void bridge_channel_alloc::release(const virtual_queue_node_id &q)   {
     assert(is_claimed(q));
     in_use.erase(q);
 }

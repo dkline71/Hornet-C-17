@@ -18,12 +18,12 @@ using namespace std;
 class channel_alloc {
 public:
     virtual ~channel_alloc() throw();
-    virtual void claim(const virtual_queue_node_id &q) throw(err);
-    virtual void release(const virtual_queue_node_id &q) throw(err);
-    virtual bool is_claimed(const virtual_queue_node_id &q) throw(err);
-    virtual void allocate() throw(err) = 0;
-    virtual void add_ingress(shared_ptr<ingress> ingress) throw(err);
-    virtual void add_egress(shared_ptr<egress> egress) throw(err) = 0;
+    virtual void claim(const virtual_queue_node_id &q)  ;
+    virtual void release(const virtual_queue_node_id &q)  ;
+    virtual bool is_claimed(const virtual_queue_node_id &q)  ;
+    virtual void allocate()   = 0;
+    virtual void add_ingress(boost::shared_ptr<ingress> ingress)  ;
+    virtual void add_egress(boost::shared_ptr<egress> egress)   = 0;
     const node_id &get_id() const throw();
 protected:
     channel_alloc(node_id src, bool one_queue_per_flow, bool one_flow_per_queue,
@@ -32,7 +32,7 @@ protected:
     const node_id id;
     bool one_queue_per_flow;
     bool one_flow_per_queue;
-    typedef vector<shared_ptr<ingress> > ingresses_t;
+    typedef vector<boost::shared_ptr<ingress> > ingresses_t;
     ingresses_t ingresses;
 private:
     set<virtual_queue_node_id> in_use;

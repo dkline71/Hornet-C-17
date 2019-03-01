@@ -16,31 +16,31 @@
 
 class crossbar {
 public:
-    crossbar(node_id parent, shared_ptr<tile_statistics> stats,
-             shared_ptr<vcd_writer> vcd, logger &log,
-             shared_ptr<random_gen> ran) throw();
-    void add_ingress(node_id src, shared_ptr<ingress> ingress) throw(err);
-    void add_egress(node_id dst, shared_ptr<egress> egress) throw(err);
-    void tick_positive_edge() throw(err);
-    void tick_negative_edge() throw(err);
+    crossbar(node_id parent, boost::shared_ptr<tile_statistics> stats,
+             boost::shared_ptr<vcd_writer> vcd, logger &log,
+             boost::shared_ptr<random_gen> ran) throw();
+    void add_ingress(node_id src, boost::shared_ptr<ingress> ingress)  ;
+    void add_egress(node_id dst, boost::shared_ptr<egress> egress)  ;
+    void tick_positive_edge()  ;
+    void tick_negative_edge()  ;
 private:
     const node_id &get_id() throw();
     void rebuild_queues() throw();
 private:
     const node_id id;
 
-    typedef map<node_id, shared_ptr<ingress> > ingresses_t;
-    typedef map<node_id, shared_ptr<egress> > egresses_t;
+    typedef map<node_id, boost::shared_ptr<ingress> > ingresses_t;
+    typedef map<node_id, boost::shared_ptr<egress> > egresses_t;
     ingresses_t ingresses;
     egresses_t egresses;
-    typedef vector<tuple<node_id, shared_ptr<virtual_queue> > > nvqs_t;
+    typedef vector<boost::tuple<node_id, boost::shared_ptr<virtual_queue> > > nvqs_t;
     nvqs_t ingress_qs;
-    typedef vector<shared_ptr<virtual_queue> > vqs_t;
+    typedef vector<boost::shared_ptr<virtual_queue> > vqs_t;
     vqs_t egress_qs;
-    shared_ptr<tile_statistics> stats;
-    shared_ptr<vcd_writer> vcd;
+    boost::shared_ptr<tile_statistics> stats;
+    boost::shared_ptr<vcd_writer> vcd;
     logger &log;
-    shared_ptr<random_gen> ran;
+    boost::shared_ptr<random_gen> ran;
     typedef struct {
         char v_xbar_demand;
         char v_xbar_use;

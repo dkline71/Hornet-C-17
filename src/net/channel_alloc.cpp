@@ -10,20 +10,20 @@ channel_alloc::channel_alloc(node_id new_id, bool one_q_per_f,
 
 channel_alloc::~channel_alloc() throw() { }
 
-bool channel_alloc::is_claimed(const virtual_queue_node_id &q) throw(err) {
+bool channel_alloc::is_claimed(const virtual_queue_node_id &q)   {
     return in_use.find(q) != in_use.end();
 }
 
-void channel_alloc::claim(const virtual_queue_node_id &q) throw(err) {
+void channel_alloc::claim(const virtual_queue_node_id &q)   {
     assert(!is_claimed(q));
     in_use.insert(q);
 }
 
-void channel_alloc::release(const virtual_queue_node_id &q) throw(err) {
+void channel_alloc::release(const virtual_queue_node_id &q)   {
     assert(is_claimed(q));
     in_use.erase(q);
 }
 
-void channel_alloc::add_ingress(shared_ptr<ingress> ing) throw(err) {
+void channel_alloc::add_ingress(boost::shared_ptr<ingress> ing)   {
     ingresses.push_back(ing);
 }

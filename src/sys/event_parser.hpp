@@ -16,29 +16,29 @@
 #include "injector.hpp"
 
 using namespace std;
-using namespace boost;
+
 
 class event_parser {
 public:
-    typedef vector<shared_ptr<injector> > injectors_t;
+    typedef vector<boost::shared_ptr<injector> > injectors_t;
     typedef map<flow_id, node_id> flow_starts_t;
 public:
-    event_parser(shared_ptr<vector<string> > event_files,
-                 shared_ptr<injectors_t> injectors,
-                 shared_ptr<flow_starts_t> flow_starts) throw(err);
+    event_parser(boost::shared_ptr<vector<string> > event_files,
+                 boost::shared_ptr<injectors_t> injectors,
+                 boost::shared_ptr<flow_starts_t> flow_starts)  ;
 private:
-    typedef tuple<string,uint64_t> pos_t;
-    uint64_t p_nat(uint64_t low = 0) throw(err);
-    string p_kw(const set<string> &kws, bool empty_ok) throw(err);
-    string p_kw(const string &kw1, bool empty_ok) throw(err);
-    string p_kw(const string &kw1, const string &kw2, bool empty_ok) throw(err);
-    void p_flow(const flow_id &flow) throw(err);
-    void p_line() throw(err);
+    typedef boost::tuple<string,uint64_t> pos_t;
+    uint64_t p_nat(uint64_t low = 0)  ;
+    string p_kw(const set<string> &kws, bool empty_ok)  ;
+    string p_kw(const string &kw1, bool empty_ok)  ;
+    string p_kw(const string &kw1, const string &kw2, bool empty_ok)  ;
+    void p_flow(const flow_id &flow)  ;
+    void p_line()  ;
 private:
-    shared_ptr<injectors_t> injectors;
-    shared_ptr<flow_starts_t> flow_starts;
-    shared_ptr<istream> input;
-    shared_ptr<istream> line;
+    boost::shared_ptr<injectors_t> injectors;
+    boost::shared_ptr<flow_starts_t> flow_starts;
+    boost::shared_ptr<istream> input;
+    boost::shared_ptr<istream> line;
     pos_t pos;
     uint64_t cur_tick;
 };

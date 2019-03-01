@@ -7,9 +7,9 @@
 #include "random.hpp"
 #include "crossbar.hpp"
 
-crossbar::crossbar(node_id parent, shared_ptr<tile_statistics> s,
-                   shared_ptr<vcd_writer> v, logger &l,
-                   shared_ptr<random_gen> r) throw()
+crossbar::crossbar(node_id parent, boost::shared_ptr<tile_statistics> s,
+                   boost::shared_ptr<vcd_writer> v, logger &l,
+                   boost::shared_ptr<random_gen> r) throw()
     : id(parent), ingresses(), egresses(), stats(s), vcd(v), log(l), ran(r) {
     if (vcd) {
         vector<string> path;
@@ -24,7 +24,7 @@ crossbar::crossbar(node_id parent, shared_ptr<tile_statistics> s,
     }
 }
 
-void crossbar::add_ingress(node_id src, shared_ptr<ingress> ing) throw(err) {
+void crossbar::add_ingress(node_id src, boost::shared_ptr<ingress> ing)   {
     if (ingresses.find(src) != ingresses.end()) {
         throw err_duplicate_ingress(get_id().get_numeric_id(),
                                     src.get_numeric_id());
@@ -33,7 +33,7 @@ void crossbar::add_ingress(node_id src, shared_ptr<ingress> ing) throw(err) {
     rebuild_queues();
 }
 
-void crossbar::add_egress(node_id dst, shared_ptr<egress> egr) throw(err) {
+void crossbar::add_egress(node_id dst, boost::shared_ptr<egress> egr)   {
     if (egresses.find(dst) != egresses.end()) {
         throw err_duplicate_egress(get_id().get_numeric_id(),
                                    dst.get_numeric_id());
@@ -47,32 +47,32 @@ void crossbar::rebuild_queues() throw() {
     typedef iq_t::const_iterator iqi_t;
     ingress_qs.clear();
     egress_qs.clear();
-    vector<tuple<node_id, iqi_t, iqi_t> > iq_iters;
-    vector<tuple<iqi_t, iqi_t> > eq_iters;
+    vector<boost::tuple<node_id, iqi_t, iqi_t> > iq_iters;
+    vector<boost::tuple<iqi_t, iqi_t> > eq_iters;
     for (ingresses_t::iterator ii = ingresses.begin(); ii != ingresses.end();
          ++ii) {
         const iq_t &qs = ii->second->get_queues();
-        iq_iters.push_back(make_tuple(ii->first, qs.begin(), qs.end()));
+        iq_iters.push_back(boost::make_tuple(ii->first, qs.begin(), qs.end()));
     }
     for (egresses_t::iterator ei = egresses.begin(); ei != egresses.end();
          ++ei) {
         const iq_t &qs = ei->second->get_remote_queues();
-        eq_iters.push_back(make_tuple(qs.begin(), qs.end()));
+        eq_iters.push_back(boost::make_tuple(qs.begin(), qs.end()));
     }
     bool more_to_do = true;
     while (more_to_do) {
         more_to_do = false;
-        for (vector<tuple<node_id, iqi_t,iqi_t> >::iterator iqii =
+        for (vector<boost::tuple<node_id, iqi_t,iqi_t> >::iterator iqii =
                  iq_iters.begin();
              iqii != iq_iters.end(); ++iqii) {
             if (iqii->get<1>() != iqii->get<2>()) {
                 more_to_do = true;
-                ingress_qs.push_back(make_tuple(iqii->get<0>(),
+                ingress_qs.push_back(boost::make_tuple(iqii->get<0>(),
                                                 iqii->get<1>()->second));
                 (iqii->get<1>())++;
             }
         }
-        for (vector<tuple<iqi_t,iqi_t> >::iterator eqii = eq_iters.begin();
+        for (vector<boost::tuple<iqi_t,iqi_t> >::iterator eqii = eq_iters.begin();
              eqii != eq_iters.end(); ++eqii) {
             if (eqii->get<0>() != eqii->get<1>()) {
                 more_to_do = true;
@@ -83,7 +83,7 @@ void crossbar::rebuild_queues() throw() {
     }
 }
 
-void crossbar::tick_positive_edge() throw(err) {
+void crossbar::tick_positive_edge()   {
     LOG(log,12) << "[xbar " << id << "] arbitration" << endl;
     map<node_id, unsigned> ibws; // remaining bandwidths for each ingress port
     map<node_id, unsigned> ebws; // remaining bandwidths for each egress
@@ -114,7 +114,7 @@ void crossbar::tick_positive_edge() throw(err) {
     for (nvqs_t::iterator iqi = ingress_qs.begin();
          iqi != ingress_qs.end(); ++iqi) {
          node_id &in_node = iqi->get<0>();
-         shared_ptr<virtual_queue> &iq = iqi->get<1>();
+         boost::shared_ptr<virtual_queue> &iq = iqi->get<1>();
          if (!iq->front_is_empty()
             && iq->front_node_id().is_valid()
             && iq->front_vq_id().is_valid()) {
@@ -156,15 +156,15 @@ void crossbar::tick_positive_edge() throw(err) {
     for (vqs_t::iterator eqi = egress_qs.begin();
          eqi != egress_qs.end(); ++eqi) {
         node_id out_node; virtual_queue_id out_q;
-        shared_ptr<virtual_queue> &eq = *eqi;
-        tie(out_node,out_q) = eq->get_id();
+        boost::shared_ptr<virtual_queue> &eq = *eqi;
+        boost::tie(out_node,out_q) = eq->get_id();
         LOG(log,12) << "[xbar " << id << "]     egress queue "
             << eq->get_id() << endl;
         if (eq->back_is_powered_on() && !eq->back_is_full()) {
             ++num_eqs;
             for (vqs_t::iterator iqi = ingress_ready_qs.begin();
                  iqi != ingress_ready_qs.end(); ++iqi) {
-                shared_ptr<virtual_queue> &iq = *iqi;
+                boost::shared_ptr<virtual_queue> &iq = *iqi;
                 bool iq_ready = (!iq->front_is_empty()
                                  && iq->front_node_id().is_valid()
                                  && iq->front_vq_id().is_valid());
@@ -177,7 +177,7 @@ void crossbar::tick_positive_edge() throw(err) {
                    } else {
                          if (iq_ready) {
                             virtual_queue_node_id vqn =
-                            make_tuple(iq->front_node_id(), iq->front_vq_id());
+                            boost::make_tuple(iq->front_node_id(), iq->front_vq_id());
                             LOG(log, 12) << "-> " << vqn << " (ready)";
                          } else {
                             LOG(log, 12) << " (not ready)";
@@ -274,5 +274,5 @@ void crossbar::tick_positive_edge() throw(err) {
     }
 }
 
-void crossbar::tick_negative_edge() throw(err) { }
+void crossbar::tick_negative_edge()   { }
 

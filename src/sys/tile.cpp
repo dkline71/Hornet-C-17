@@ -7,7 +7,7 @@
 
 tile::tile(const tile_id &new_id, const uint32_t num_tiles,
            const uint64_t &init_time, const uint64_t &stats_t0,
-           shared_ptr<flow_rename_table> flow_renames,
+           boost::shared_ptr<flow_rename_table> flow_renames,
            logger &new_log) throw()
     : id(new_id), time(init_time), pes(), nodes(), bridges(), arbiters(),
       stats(new tile_statistics(time, stats_t0, flow_renames )),
@@ -20,18 +20,18 @@ tile::tile(const tile_id &new_id, const uint32_t num_tiles,
     packet_id templ =
         static_cast<packet_id>(id.get_numeric_id()) << id_offset;
     pid_factory =
-        shared_ptr<id_factory<packet_id> >(new id_factory<packet_id>(templ,
+        boost::shared_ptr<id_factory<packet_id> >(new id_factory<packet_id>(templ,
                                                                      mask));
 }
 
-void tile::add(shared_ptr<pe> p) throw() {
+void tile::add(boost::shared_ptr<pe> p) throw() {
     for (pes_t::const_iterator i = pes.begin(); i != pes.end(); ++i) {
         assert((*i)->get_id() != p->get_id());
     }
     pes.push_back(p);
 }
 
-void tile::add(shared_ptr<bridge> b) throw() {
+void tile::add(boost::shared_ptr<bridge> b) throw() {
     for (bridges_t::const_iterator i = bridges.begin();
          i != bridges.end(); ++i) {
         assert((*i)->get_id() != b->get_id());
@@ -39,14 +39,14 @@ void tile::add(shared_ptr<bridge> b) throw() {
     bridges.push_back(b);
 }
 
-void tile::add(shared_ptr<node> n) throw() {
+void tile::add(boost::shared_ptr<node> n) throw() {
     for (nodes_t::const_iterator i = nodes.begin(); i != nodes.end(); ++i) {
         assert((*i)->get_id() != n->get_id());
     }
     nodes.push_back(n);
 }
 
-void tile::add(shared_ptr<arbiter> a) throw() {
+void tile::add(boost::shared_ptr<arbiter> a) throw() {
     for (arbiters_t::const_iterator i = arbiters.begin();
          i != arbiters.end(); ++i) {
         assert((*i)->get_id() != a->get_id());
@@ -58,15 +58,15 @@ const uint64_t &tile::get_time() const throw() {
     return time;
 }
 
-shared_ptr<tile_statistics> tile::get_statistics() const throw() {
+boost::shared_ptr<tile_statistics> tile::get_statistics() const throw() {
     return stats;
 }
 
-shared_ptr<id_factory<packet_id> > tile::get_packet_id_factory() const throw() {
+boost::shared_ptr<id_factory<packet_id> > tile::get_packet_id_factory() const throw() {
     return pid_factory;
 }
 
-void tile::tick_positive_edge() throw(err) {
+void tile::tick_positive_edge()   {
     for (pes_t::iterator i = pes.begin(); i != pes.end(); ++i) {
         (*i)->tick_positive_edge();
     }
@@ -81,7 +81,7 @@ void tile::tick_positive_edge() throw(err) {
     }
 }
 
-void tile::tick_negative_edge() throw(err) {
+void tile::tick_negative_edge()   {
     for (pes_t::iterator i = pes.begin(); i != pes.end(); ++i) {
         (*i)->tick_negative_edge();
     }
