@@ -5,6 +5,9 @@ parser
 *.m4
 darsim
 bin/*
+*.img
+*.evt
+*.cfg 
 
 # Program-specific autogen files
 Makefile
