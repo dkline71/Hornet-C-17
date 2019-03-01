@@ -23,7 +23,10 @@ appropriate include and link flags (see the Makefiles for the examples).
 The first time:
 
     ./bootstrap
-    ./configure --prefix=$HOME/dar-inst
+    If boost libs are in a standard location:
+        ./configure --prefix=$HOME/dar-inst LDFLAGS=-lpthread
+    If boost libs are not in a standard location (for example, /usr/lib/x86_64-linux-gnu) :
+        ./configure --prefix=$HOME/dar-inst LDFLAGS=-lpthread --with-boost-libdir=<location>
     make
     make install
 
